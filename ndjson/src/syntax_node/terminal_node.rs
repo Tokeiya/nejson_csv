@@ -57,9 +57,12 @@ pub mod test_helper {
 
 #[cfg(test)]
 mod test {
+	use super::super::test_prelude::*;
+	use super::*;
+
 	#[test]
 	fn new() {
-		todo!();
+		todo!()
 	}
 
 	#[test]
