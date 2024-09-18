@@ -8,7 +8,7 @@ pub struct TerminalNode {
 }
 
 impl TerminalNode {
-	pub fn new(node_type: TerminalNodeType, value: String, lead: String, trail: String)->Self {
+	pub fn new(node_type: TerminalNodeType, value: String, lead: String, trail: String) -> Self {
 		todo!()
 	}
 
@@ -47,7 +47,7 @@ pub mod test_helper {
 			assert_eq!(&self.trail, expected);
 		}
 
-		pub fn assert_default_ws(&self,expected_type:TerminalNodeType, expected_value: &str) {
+		pub fn assert_default_ws(&self, expected_type: TerminalNodeType, expected_value: &str) {
 			self.assert_lead(&WS);
 			self.assert_trail(&WS);
 			self.assert_value(expected_value);
@@ -71,13 +71,23 @@ mod test {
 
 	#[test]
 	fn lead() {
-		let fixture=TerminalNode::new(TerminalNodeType::Boolean, "true".to_string(), "lead".to_string(), "trail".to_string());
+		let fixture = TerminalNode::new(
+			TerminalNodeType::Boolean,
+			"true".to_string(),
+			"lead".to_string(),
+			"trail".to_string(),
+		);
 		fixture.assert_lead("lead");
 	}
 
 	#[test]
 	fn trail() {
-		let fixture=TerminalNode::new(TerminalNodeType::Boolean, "true".to_string(), "lead".to_string(), "trail".to_string());
+		let fixture = TerminalNode::new(
+			TerminalNodeType::Boolean,
+			"true".to_string(),
+			"lead".to_string(),
+			"trail".to_string(),
+		);
 		fixture.assert_trail("trail");
 	}
 
