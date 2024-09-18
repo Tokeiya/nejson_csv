@@ -1,1 +1,1 @@
-mod syntax_node;
+pub mod syntax_node;
