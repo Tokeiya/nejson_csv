@@ -1,0 +1,9 @@
+[package]
+name = "playground"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+csv = { path = "../csv" }
+ndjson = { path = "../ndjson" }
+combine = "*"
