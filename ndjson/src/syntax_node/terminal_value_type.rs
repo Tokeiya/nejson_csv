@@ -1,21 +1,11 @@
 use std::fmt::{Debug, Formatter};
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TerminalNodeType {
 	Boolean,
 	Number,
 	String,
 	Null,
-}
-
-impl Debug for TerminalNodeType {
-	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-		match self {
-			TerminalNodeType::Boolean => write!(f, "Boolean"),
-			TerminalNodeType::Number => write!(f, "Number"),
-			TerminalNodeType::String => write!(f, "String"),
-			TerminalNodeType::Null => write!(f, "Null"),
-		}
-	}
 }
 
 #[cfg(test)]
@@ -36,6 +26,12 @@ mod test {
 pub mod test_helper {
 	use super::*;
 	pub struct TerminalNodeTypes(Option<usize>);
+
+	impl TerminalNodeTypes {
+		pub fn new() -> Self {
+			TerminalNodeTypes(Some(0))
+		}
+	}
 
 	impl Iterator for TerminalNodeTypes {
 		type Item = TerminalNodeType;
