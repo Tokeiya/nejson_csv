@@ -1,9 +1,9 @@
 use super::non_terminal_node::NonTerminalNode;
+use super::object_element::ObjectElement;
 use super::terminal_node::TerminalNode;
-
 pub enum Node {
 	Terminal(TerminalNode),
-	NonTerminal(NonTerminalNode),
+	Non,
 }
 
 #[cfg(test)]

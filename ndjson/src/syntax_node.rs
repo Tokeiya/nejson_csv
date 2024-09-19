@@ -1,6 +1,7 @@
 pub mod node;
 pub mod non_terminal_node;
 pub mod non_terminal_value_type;
+mod object_element;
 pub mod terminal_node;
 pub mod terminal_value_type;
 
