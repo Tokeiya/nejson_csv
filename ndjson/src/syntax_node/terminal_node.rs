@@ -9,23 +9,28 @@ pub struct TerminalNode {
 
 impl TerminalNode {
 	pub fn new(node_type: TerminalNodeType, value: String, lead: String, trail: String) -> Self {
-		todo!()
+		TerminalNode {
+			node_type,
+			value,
+			lead,
+			trail,
+		}
 	}
 
 	pub fn lead(&self) -> &str {
-		todo!()
+		&self.lead
 	}
 
 	pub fn value(&self) -> &str {
-		todo!()
+		&self.value
 	}
 
 	pub fn trail(&self) -> &str {
-		todo!()
+		&self.trail
 	}
 
-	pub fn node_type(&self) -> &TerminalNodeType {
-		todo!()
+	pub fn node_type(&self) -> TerminalNodeType {
+		self.node_type
 	}
 }
 
@@ -37,21 +42,24 @@ pub mod test_helper {
 	impl TerminalNode {
 		pub fn assert_lead(&self, expected: &str) {
 			assert_eq!(&self.lead, expected);
+			assert_eq!(self.lead(), expected);
 		}
 
 		pub fn assert_value(&self, expected: &str) {
 			assert_eq!(&self.value, expected);
+			assert_eq!(self.value(), expected);
 		}
 
 		pub fn assert_trail(&self, expected: &str) {
 			assert_eq!(&self.trail, expected);
+			assert_eq!(self.trail(), expected);
 		}
 
 		pub fn assert_default_ws(&self, expected_type: TerminalNodeType, expected_value: &str) {
 			self.assert_lead(&WS);
 			self.assert_trail(&WS);
 			self.assert_value(expected_value);
-			assert_eq!(self.node_type(), &expected_type);
+			assert_eq!(self.node_type(), expected_type);
 		}
 	}
 }
@@ -93,11 +101,27 @@ mod test {
 
 	#[test]
 	fn node_type() {
-		todo!()
+		for elem in TerminalNodeTypes::new() {
+			let fixture = TerminalNode::new(
+				elem,
+				"value".to_string(),
+				"lead".to_string(),
+				"trail".to_string(),
+			);
+
+			assert_eq!(fixture.node_type(), elem);
+		}
 	}
 
 	#[test]
 	fn value() {
-		todo!();
+		let fixture = TerminalNode::new(
+			TerminalNodeType::Boolean,
+			"bool".to_string(),
+			"lead".to_string(),
+			"trail".to_string(),
+		);
+
+		assert_eq!(fixture.value(), "bool");
 	}
 }
