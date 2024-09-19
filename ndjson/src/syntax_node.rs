@@ -6,7 +6,7 @@ pub mod terminal_node;
 pub mod terminal_value_type;
 
 pub mod prelude {
-	pub use super::non_terminal_node::NonTerminalNodeValue;
+	pub use super::non_terminal_node::{ArrayNode, ObjectNode};
 	pub use super::non_terminal_value_type::NonTerminalNodeType;
 	pub use super::terminal_node::TerminalNode;
 	pub use super::terminal_value_type::TerminalNodeType;

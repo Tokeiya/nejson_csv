@@ -7,15 +7,15 @@ pub struct ObjectElement {
 
 impl ObjectElement {
 	pub fn new(key: TerminalNode, value: Node) -> Self {
-		todo!()
+		ObjectElement { key, value }
 	}
 
 	pub fn key(&self) -> &TerminalNode {
-		todo!()
+		&self.key
 	}
 
 	pub fn value(&self) -> &Node {
-		todo!()
+		&self.value
 	}
 }
 
@@ -42,4 +42,30 @@ pub mod test_helper {
 }
 
 #[cfg(test)]
-mod test {}
+mod test {
+	use super::*;
+	use crate::syntax_node::prelude::TerminalNodeType;
+	use crate::syntax_node::test_prelude::{ws, WS};
+
+	#[test]
+	fn new() {
+		let key = TerminalNode::new(TerminalNodeType::String, "key".to_string(), ws(), ws());
+		let value = Node::Terminal(TerminalNode::new(
+			TerminalNodeType::String,
+			"value".to_string(),
+			ws(),
+			ws(),
+		));
+		let object_element = ObjectElement::new(key, value);
+		object_element.assert_key("key", *WS, *WS);
+		object_element
+			.value
+			.extract_terminal()
+			.assert_default_ws(TerminalNodeType::String, "value");
+
+		object_element
+			.value()
+			.extract_terminal()
+			.assert_default_ws(TerminalNodeType::String, "value");
+	}
+}
