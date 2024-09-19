@@ -20,6 +20,34 @@ mod test {
 		assert_eq!(format!("{:?}", TerminalNodeType::String), "String");
 		assert_eq!(format!("{:?}", TerminalNodeType::Null), "Null");
 	}
+
+	#[test]
+	fn copy() {
+		let fixture = TerminalNodeType::String;
+		let copied = fixture;
+
+		fixture.assert_string();
+		copied.assert_string();
+	}
+
+	#[test]
+	fn clone() {
+		let fixture = TerminalNodeType::Boolean;
+		let cloned = fixture.clone();
+
+		fixture.assert_boolean();
+		cloned.assert_boolean();
+	}
+
+	#[test]
+	fn eq() {
+		for elem in TerminalNodeTypes::new() {
+			let foo = elem;
+			assert_eq!(foo, elem);
+		}
+
+		assert_ne!(TerminalNodeType::Boolean, TerminalNodeType::String);
+	}
 }
 
 #[cfg(test)]
