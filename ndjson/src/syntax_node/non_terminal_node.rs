@@ -108,7 +108,7 @@ mod test {
 		let node = ArrayNode::new(
 			vec![
 				TerminalNode::new(TerminalNodeType::String, "foo".to_string(), ws(), ws()),
-				TerminalNode::new(TerminalNodeType::Number, "42".to_string(), ws(), ws()),
+				TerminalNode::new(TerminalNodeType::Integer, "42".to_string(), ws(), ws()),
 			],
 			ws(),
 			ws(),
@@ -120,7 +120,7 @@ mod test {
 		let contents = node.value().extract_contents();
 		assert_eq!(contents.len(), 2);
 		contents[0].assert_default_ws(TerminalNodeType::String, "foo");
-		contents[1].assert_default_ws(TerminalNodeType::Number, "42");
+		contents[1].assert_default_ws(TerminalNodeType::Integer, "42");
 
 		let node = ArrayNode::empty("lead".to_string(), "space".to_string(), "trail".to_string());
 		assert_eq!(&node.lead, "lead");
@@ -135,7 +135,7 @@ mod test {
 				ObjectElement::new(
 					TerminalNode::new(TerminalNodeType::String, "foo".to_string(), ws(), ws()),
 					Node::Terminal(TerminalNode::new(
-						TerminalNodeType::Number,
+						TerminalNodeType::Integer,
 						"42".to_string(),
 						ws(),
 						ws(),
@@ -144,7 +144,7 @@ mod test {
 				ObjectElement::new(
 					TerminalNode::new(TerminalNodeType::String, "bar".to_string(), ws(), ws()),
 					Node::Terminal(TerminalNode::new(
-						TerminalNodeType::Number,
+						TerminalNodeType::Float,
 						"42.195".to_string(),
 						ws(),
 						ws(),
@@ -164,7 +164,7 @@ mod test {
 		contents[1]
 			.value()
 			.extract_terminal()
-			.assert_default_ws(TerminalNodeType::Number, "42.195");
+			.assert_default_ws(TerminalNodeType::Float, "42.195");
 
 		let node = ObjectNode::empty("lead".to_string(), "space".to_string(), "trail".to_string());
 		assert_eq!(&node.lead, "lead");
@@ -177,7 +177,7 @@ mod test {
 		let node = ArrayNode::new(
 			vec![
 				TerminalNode::new(TerminalNodeType::String, "foo".to_string(), ws(), ws()),
-				TerminalNode::new(TerminalNodeType::Number, "42".to_string(), ws(), ws()),
+				TerminalNode::new(TerminalNodeType::Integer, "42".to_string(), ws(), ws()),
 			],
 			ws(),
 			ws(),
@@ -186,14 +186,14 @@ mod test {
 		assert_eq!(array.len(), 2);
 
 		array[0].assert_default_ws(TerminalNodeType::String, "foo");
-		array[1].assert_default_ws(TerminalNodeType::Number, "42");
+		array[1].assert_default_ws(TerminalNodeType::Integer, "42");
 
 		let node = ObjectNode::new(
 			vec![
 				ObjectElement::new(
 					TerminalNode::new(TerminalNodeType::String, "foo".to_string(), ws(), ws()),
 					Node::Terminal(TerminalNode::new(
-						TerminalNodeType::Number,
+						TerminalNodeType::Integer,
 						"42".to_string(),
 						ws(),
 						ws(),
@@ -202,7 +202,7 @@ mod test {
 				ObjectElement::new(
 					TerminalNode::new(TerminalNodeType::String, "bar".to_string(), ws(), ws()),
 					Node::Terminal(TerminalNode::new(
-						TerminalNodeType::Number,
+						TerminalNodeType::Float,
 						"42.195".to_string(),
 						ws(),
 						ws(),
@@ -220,13 +220,13 @@ mod test {
 		object[0]
 			.value()
 			.extract_terminal()
-			.assert_default_ws(TerminalNodeType::Number, "42");
+			.assert_default_ws(TerminalNodeType::Integer, "42");
 
 		object[1].assert_key("bar", *WS, *WS);
 		object[1]
 			.value()
 			.extract_terminal()
-			.assert_default_ws(TerminalNodeType::Number, "42.195");
+			.assert_default_ws(TerminalNodeType::Float, "42.195");
 	}
 
 	#[test]
@@ -234,7 +234,7 @@ mod test {
 		let node = ArrayNode::new(
 			vec![
 				TerminalNode::new(TerminalNodeType::String, "foo".to_string(), ws(), ws()),
-				TerminalNode::new(TerminalNodeType::Number, "42".to_string(), ws(), ws()),
+				TerminalNode::new(TerminalNodeType::Integer, "42".to_string(), ws(), ws()),
 			],
 			ws(),
 			ws(),
@@ -246,7 +246,7 @@ mod test {
 				ObjectElement::new(
 					TerminalNode::new(TerminalNodeType::String, "foo".to_string(), ws(), ws()),
 					Node::Terminal(TerminalNode::new(
-						TerminalNodeType::Number,
+						TerminalNodeType::Integer,
 						"42".to_string(),
 						ws(),
 						ws(),
@@ -255,7 +255,7 @@ mod test {
 				ObjectElement::new(
 					TerminalNode::new(TerminalNodeType::String, "bar".to_string(), ws(), ws()),
 					Node::Terminal(TerminalNode::new(
-						TerminalNodeType::Number,
+						TerminalNodeType::Float,
 						"42.195".to_string(),
 						ws(),
 						ws(),

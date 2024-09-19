@@ -3,7 +3,8 @@ use std::fmt::Debug;
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TerminalNodeType {
 	Boolean,
-	Number,
+	Float,
+	Integer,
 	String,
 	Null,
 }
@@ -16,9 +17,10 @@ mod test {
 	#[test]
 	fn debug() {
 		assert_eq!(format!("{:?}", TerminalNodeType::Boolean), "Boolean");
-		assert_eq!(format!("{:?}", TerminalNodeType::Number), "Number");
+		assert_eq!(format!("{:?}", TerminalNodeType::Float), "Float");
 		assert_eq!(format!("{:?}", TerminalNodeType::String), "String");
 		assert_eq!(format!("{:?}", TerminalNodeType::Null), "Null");
+		assert_eq!(format!("{:?}", TerminalNodeType::Integer), "Integer");
 	}
 
 	#[test]
@@ -74,7 +76,7 @@ pub mod test_helper {
 					}
 					1 => {
 						self.0 = Some(2);
-						Some(TerminalNodeType::Number)
+						Some(TerminalNodeType::Float)
 					}
 					2 => {
 						self.0 = Some(3);
@@ -83,6 +85,10 @@ pub mod test_helper {
 					3 => {
 						self.0 = Some(4);
 						Some(TerminalNodeType::Null)
+					}
+					4 => {
+						self.0 = None;
+						Some(TerminalNodeType::Integer)
 					}
 					_ => {
 						self.0 = None;
@@ -100,9 +106,15 @@ pub mod test_helper {
 			assert!(matches!(self, TerminalNodeType::Boolean));
 		}
 		#[cfg(test)]
-		pub fn assert_number(&self) {
-			assert!(matches!(self, TerminalNodeType::Number));
+		pub fn assert_float(&self) {
+			assert!(matches!(self, TerminalNodeType::Float));
 		}
+
+		#[cfg(test)]
+		pub fn assert_integer(&self) {
+			assert!(matches!(self, TerminalNodeType::Integer));
+		}
+
 		#[cfg(test)]
 		pub fn assert_string(&self) {
 			assert!(matches!(self, TerminalNodeType::String));
