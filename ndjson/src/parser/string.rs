@@ -51,7 +51,7 @@ pub fn string<I: Stream<Token = char>>() -> impl Parser<I, Output = (String, Ter
 		chr::char('"'),
 	)
 		.map(|(_, c, _)| {
-			let mut buff = String::from('"');
+			let mut buff = String::new();
 
 			for elem in c {
 				match elem {
@@ -59,8 +59,6 @@ pub fn string<I: Stream<Token = char>>() -> impl Parser<I, Output = (String, Ter
 					O::String(s) => buff.push_str(&s),
 				}
 			}
-
-			buff.push('"');
 
 			(buff, TerminalNodeType::String)
 		})
@@ -158,13 +156,13 @@ mod test {
 
 		assert_eq!(
 			parser.parse(r#""foo""#).unwrap(),
-			((r#""foo""#.to_string(), TerminalNodeType::String), "")
+			((r#"foo"#.to_string(), TerminalNodeType::String), "")
 		);
 
 		assert_eq!(
 			parser.parse(r#""\u0041\u0061""#).unwrap(),
 			(
-				(r#""\u0041\u0061""#.to_string(), TerminalNodeType::String),
+				(r#"\u0041\u0061"#.to_string(), TerminalNodeType::String),
 				""
 			)
 		);
@@ -173,7 +171,7 @@ mod test {
 			parser.parse(r#""\"\\\/\b\f\n\r\t\u0061""#).unwrap(),
 			(
 				(
-					r#""\"\\\/\b\f\n\r\t\u0061""#.to_string(),
+					r#"\"\\\/\b\f\n\r\t\u0061"#.to_string(),
 					TerminalNodeType::String
 				),
 				""
@@ -182,10 +180,7 @@ mod test {
 
 		assert_eq!(
 			parser.parse(r#""hello world""#).unwrap(),
-			(
-				(r#""hello world""#.to_string(), TerminalNodeType::String),
-				""
-			)
+			((r#"hello world"#.to_string(), TerminalNodeType::String), "")
 		);
 	}
 }
