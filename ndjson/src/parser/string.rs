@@ -3,10 +3,11 @@ use combine as cmb;
 use combine::parser::char as chr;
 use combine::{Parser, Stream};
 
-pub enum O {
+enum O {
 	Char(char),
 	String(String),
 }
+
 fn unescaped<I: Stream<Token = char>>() -> impl Parser<I, Output = O> {
 	cmb::satisfy::<I, _>(|c| {
 		if c >= '\u{20}' && c <= '\u{21}' {
@@ -24,12 +25,45 @@ fn unescaped<I: Stream<Token = char>>() -> impl Parser<I, Output = O> {
 
 fn escaped<I: Stream<Token = char>>() -> impl Parser<I, Output = O> {
 	let digits = cmb::parser::repeat::count_min_max::<String, I, _>(4, 4, chr::hex_digit());
-	chr::char('a').map(|_| todo!())
+	let code_point = (chr::char::<I>('u'), digits).map(|(_, d)| O::String(format!("\\u{d}")));
+
+	let escape_identity = cmb::satisfy::<I, _>(|c| match c {
+		'"' => true,
+		'\\' => true,
+		'/' => true,
+		'b' => true,
+		'f' => true,
+		'n' => true,
+		'r' => true,
+		't' => true,
+		_ => false,
+	})
+	.map(|c| O::String(format!("\\{c}")));
+
+	(chr::char('\\'), code_point.or(escape_identity)).map(|(_, o)| o)
 }
 
 //Quote is captured by the caller
 pub fn string<I: Stream<Token = char>>() -> impl Parser<I, Output = (String, TerminalNodeType)> {
-	chr::char('a').map(|_| todo!())
+	(
+		chr::char('"'),
+		cmb::many::<Vec<O>, I, _>(unescaped().or(escaped())),
+		chr::char('"'),
+	)
+		.map(|(_, c, _)| {
+			let mut buff = String::from('"');
+
+			for elem in c {
+				match elem {
+					O::Char(c) => buff.push(c),
+					O::String(s) => buff.push_str(&s),
+				}
+			}
+
+			buff.push('"');
+
+			(buff, TerminalNodeType::String)
+		})
 }
 
 #[cfg(test)]
@@ -124,19 +158,22 @@ mod test {
 
 		assert_eq!(
 			parser.parse(r#""foo""#).unwrap(),
-			(("foo".to_string(), TerminalNodeType::String), "")
+			((r#""foo""#.to_string(), TerminalNodeType::String), "")
 		);
 
 		assert_eq!(
 			parser.parse(r#""\u0041\u0061""#).unwrap(),
-			(("Aa".to_string(), TerminalNodeType::String), "")
+			(
+				(r#""\u0041\u0061""#.to_string(), TerminalNodeType::String),
+				""
+			)
 		);
 
 		assert_eq!(
 			parser.parse(r#""\"\\\/\b\f\n\r\t\u0061""#).unwrap(),
 			(
 				(
-					"\"\\/\u{08}\u{0C}\n\r\t".to_string(),
+					r#""\"\\\/\b\f\n\r\t\u0061""#.to_string(),
 					TerminalNodeType::String
 				),
 				""
@@ -145,7 +182,10 @@ mod test {
 
 		assert_eq!(
 			parser.parse(r#""hello world""#).unwrap(),
-			(("hello world".to_string(), TerminalNodeType::String), "")
+			(
+				(r#""hello world""#.to_string(), TerminalNodeType::String),
+				""
+			)
 		);
 	}
 }
