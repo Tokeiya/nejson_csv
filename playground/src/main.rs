@@ -1,6 +1,5 @@
 use combine::satisfy;
 fn main() {
-	let mut parser=satisfy::<&str,_>(|c|{
-		if c<=
-	})
+	let x = 10;
+	dbg!(format!("value:{x}"));
 }
