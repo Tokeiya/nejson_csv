@@ -1,15 +1,15 @@
-use crate::syntax_node::prelude::TerminalNodeType;
+use crate::syntax_node::prelude::*;
 use combine::parser::char as chr;
 use combine::{Parser, Stream};
 
-pub fn boolean<I: Stream<Token = char>>() -> impl Parser<I, Output = (String, TerminalNodeType)> {
+pub fn boolean<I: Stream<Token = char>>() -> impl Parser<I, Output = TerminalNode> {
 	chr::string::<I>("true")
 		.or(chr::string::<I>("false"))
 		.map(|str| {
 			if str == "true" {
-				(str.to_string(), TerminalNodeType::Boolean)
+				TerminalNode::new(TerminalNodeType::Boolean, "true".to_string())
 			} else if str == "false" {
-				(str.to_string(), TerminalNodeType::Boolean)
+				TerminalNode::new(TerminalNodeType::Boolean, "false".to_string())
 			} else {
 				unreachable!()
 			}
@@ -23,15 +23,13 @@ mod test {
 	#[test]
 	fn boolean() {
 		let mut parser = super::boolean::<&str>();
-		let ((v, t), rem) = parser.parse("true").unwrap();
+		let (a, rem) = parser.parse("true").unwrap();
 		assert_eq!(rem, "");
-		assert_eq!(&v, "true");
-		assert_eq!(t, TerminalNodeType::Boolean);
+		a.assert(TerminalNodeType::Boolean, "true");
 
-		let ((v, t), rem) = parser.parse("false").unwrap();
+		let (a, rem) = parser.parse("false").unwrap();
 		assert_eq!(rem, "");
-		assert_eq!(&v, "false");
-		assert_eq!(t, TerminalNodeType::Boolean);
+		a.assert(TerminalNodeType::Boolean, "false");
 	}
 
 	#[test]

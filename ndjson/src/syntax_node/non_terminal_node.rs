@@ -128,7 +128,7 @@ mod test {
 		assert_eq!(contents.len(), 2);
 		contents[0].assert_key("foo");
 
-		let tmp = contents[0].value().extract_terminal();
+		contents[0].value().extract_terminal();
 
 		contents[1]
 			.value()

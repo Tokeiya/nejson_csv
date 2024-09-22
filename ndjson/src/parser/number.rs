@@ -12,7 +12,7 @@ fn integer<I: Stream<Token = char>>() -> impl Parser<I, Output = String> {
 
 	let zero = chr::char::<I>('0')
 		.skip(combinator::not_followed_by(chr::digit()))
-		.map(|c| "0".to_string());
+		.map(|_| "0".to_string());
 
 	let one_nine = cmb::satisfy::<I, _>(|c| c >= '1' && c <= '9');
 
