@@ -88,7 +88,7 @@ mod test {
 	fn array_new() {
 		let node = ArrayNode::new(vec![
 			TerminalNode::new(TerminalNodeType::String, "foo".to_string()),
-			TerminalNode::new(TerminalNodeType::Number, "42".to_string()),
+			TerminalNode::new(TerminalNodeType::Integer, "42".to_string()),
 		]);
 		assert_eq!(node.node_type(), NonTerminalNodeType::Array);
 
@@ -107,14 +107,14 @@ mod test {
 			ObjectElement::new(
 				TerminalNode::new(TerminalNodeType::String, "foo".to_string()),
 				NodeValue::Terminal(TerminalNode::new(
-					TerminalNodeType::Number,
+					TerminalNodeType::Integer,
 					"42".to_string(),
 				)),
 			),
 			ObjectElement::new(
 				TerminalNode::new(TerminalNodeType::String, "bar".to_string()),
 				NodeValue::Terminal(TerminalNode::new(
-					TerminalNodeType::Number,
+					TerminalNodeType::Float,
 					"42.195".to_string(),
 				)),
 			),
@@ -137,7 +137,7 @@ mod test {
 	fn value() {
 		let node = ArrayNode::new(vec![
 			TerminalNode::new(TerminalNodeType::String, "foo".to_string()),
-			TerminalNode::new(TerminalNodeType::Number, "42".to_string()),
+			TerminalNode::new(TerminalNodeType::Integer, "42".to_string()),
 		]);
 		let array = node.value().extract_contents();
 		assert_eq!(array.len(), 2);
@@ -149,14 +149,14 @@ mod test {
 			ObjectElement::new(
 				TerminalNode::new(TerminalNodeType::String, "foo".to_string()),
 				NodeValue::Terminal(TerminalNode::new(
-					TerminalNodeType::Number,
+					TerminalNodeType::Integer,
 					"42".to_string(),
 				)),
 			),
 			ObjectElement::new(
 				TerminalNode::new(TerminalNodeType::String, "bar".to_string()),
 				NodeValue::Terminal(TerminalNode::new(
-					TerminalNodeType::Number,
+					TerminalNodeType::Float,
 					"42.195".to_string(),
 				)),
 			),
