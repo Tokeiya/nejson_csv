@@ -49,6 +49,11 @@ pub mod test_helper {
 			assert_eq!(self.trail.as_str(), expected);
 			assert_eq!(self.trail(), expected);
 		}
+
+		pub fn assert_lead_trail(&self, lead: Option<&str>, trail: Option<&str>) {
+			self.assert_lead(lead);
+			self.assert_trail(trail);
+		}
 	}
 }
 
