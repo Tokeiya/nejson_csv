@@ -54,11 +54,11 @@ mod test {
 		object_element
 			.value
 			.extract_terminal()
-			.assert_default_ws(TerminalNodeType::String, "value");
+			.assert(TerminalNodeType::String, "value");
 
 		object_element
 			.value()
 			.extract_terminal()
-			.assert_default_ws(TerminalNodeType::String, "value");
+			.assert(TerminalNodeType::String, "value");
 	}
 }

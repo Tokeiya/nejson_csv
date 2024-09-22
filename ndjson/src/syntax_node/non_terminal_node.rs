@@ -94,8 +94,11 @@ mod test {
 
 		let contents = node.value().extract_contents();
 		assert_eq!(contents.len(), 2);
-		contents[0].assert_default_ws(TerminalNodeType::String, "foo");
-		contents[1].assert_default_ws(TerminalNodeType::Integer, "42");
+		contents[0].assert_value("foo");
+		contents[0].node_type().assert_string();
+
+		contents[1].node_type().assert_integer();
+		contents[1].assert_value("42");
 
 		let node = ArrayNode::empty("space".to_string());
 		node.value.assert_empty("space");
@@ -124,10 +127,13 @@ mod test {
 		let contents = node.value().extract_contents();
 		assert_eq!(contents.len(), 2);
 		contents[0].assert_key("foo");
+
+		let tmp = contents[0].value().extract_terminal();
+
 		contents[1]
 			.value()
 			.extract_terminal()
-			.assert_default_ws(TerminalNodeType::Float, "42.195");
+			.assert(TerminalNodeType::Float, "42.195");
 
 		let node = ObjectNode::empty("space".to_string());
 		node.value.assert_empty("space");
@@ -142,8 +148,8 @@ mod test {
 		let array = node.value().extract_contents();
 		assert_eq!(array.len(), 2);
 
-		array[0].assert_default_ws(TerminalNodeType::String, "foo");
-		array[1].assert_default_ws(TerminalNodeType::Integer, "42");
+		array[0].assert(TerminalNodeType::String, "foo");
+		array[1].assert(TerminalNodeType::Integer, "42");
 
 		let node = ObjectNode::new(vec![
 			ObjectElement::new(
@@ -169,12 +175,12 @@ mod test {
 		object[0]
 			.value()
 			.extract_terminal()
-			.assert_default_ws(TerminalNodeType::Integer, "42");
+			.assert(TerminalNodeType::Integer, "42");
 
 		object[1].assert_key("bar");
 		object[1]
 			.value()
 			.extract_terminal()
-			.assert_default_ws(TerminalNodeType::Float, "42.195");
+			.assert(TerminalNodeType::Float, "42.195");
 	}
 }

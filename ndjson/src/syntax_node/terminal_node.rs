@@ -27,9 +27,12 @@ pub mod test_helper {
 			assert_eq!(self.value(), expected);
 		}
 
-		pub fn assert_default_ws(&self, expected_type: TerminalNodeType, expected_value: &str) {
-			self.assert_value(expected_value);
+		pub fn assert(&self, expected_type: TerminalNodeType, expected_value: &str) {
+			assert_eq!(self.node_type, expected_type);
 			assert_eq!(self.node_type(), expected_type);
+
+			assert_eq!(self.value.as_str(), expected_value);
+			assert_eq!(self.value(), expected_value);
 		}
 	}
 }
@@ -43,7 +46,7 @@ mod test {
 	fn new() {
 		for elem in TerminalNodeTypes::new() {
 			let node = TerminalNode::new(elem, format!("{elem:?}"));
-			node.assert_default_ws(elem, &format!("{elem:?}"));
+			node.assert(elem, &format!("{elem:?}"));
 		}
 	}
 

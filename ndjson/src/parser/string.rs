@@ -44,7 +44,7 @@ fn escaped<I: Stream<Token = char>>() -> impl Parser<I, Output = O> {
 }
 
 //Quote is captured by the caller
-pub fn string<I: Stream<Token = char>>() -> impl Parser<I, Output = (String, TerminalNodeType)> {
+pub fn string<I: Stream<Token = char>>() -> impl Parser<I, Output = TerminalNode> {
 	(
 		chr::char('"'),
 		cmb::many::<Vec<O>, I, _>(unescaped().or(escaped())),
@@ -59,8 +59,7 @@ pub fn string<I: Stream<Token = char>>() -> impl Parser<I, Output = (String, Ter
 					O::String(s) => buff.push_str(&s),
 				}
 			}
-
-			(buff, TerminalNodeType::String)
+			TerminalNode::new(TerminalNodeType::String, buff)
 		})
 }
 
@@ -152,35 +151,25 @@ mod test {
 	fn string() {
 		let mut parser = super::string::<&str>();
 
-		let ((s, t), r) = parser.parse(r#""foo""#).unwrap();
+		let (a, r) = parser.parse(r#""foo""#).unwrap();
 
-		assert_eq!(
-			parser.parse(r#""foo""#).unwrap(),
-			((r#"foo"#.to_string(), TerminalNodeType::String), "")
-		);
+		assert_eq!(r, "");
+		a.assert_value("foo");
+		a.node_type().assert_string();
 
-		assert_eq!(
-			parser.parse(r#""\u0041\u0061""#).unwrap(),
-			(
-				(r#"\u0041\u0061"#.to_string(), TerminalNodeType::String),
-				""
-			)
-		);
+		let (a, r) = parser.parse(r#""\u0041\u0061""#).unwrap();
+		a.assert_value(r#"\u0041\u0061"#);
+		a.node_type().assert_string();
+		assert_eq!(r, "");
 
-		assert_eq!(
-			parser.parse(r#""\"\\\/\b\f\n\r\t\u0061""#).unwrap(),
-			(
-				(
-					r#"\"\\\/\b\f\n\r\t\u0061"#.to_string(),
-					TerminalNodeType::String
-				),
-				""
-			)
-		);
+		let (a, r) = parser.parse(r#""\"\\\/\b\f\n\r\t\u0061""#).unwrap();
+		assert_eq!(r, "");
+		a.assert_value(r#"\"\\\/\b\f\n\r\t\u0061"#);
+		a.node_type().assert_string();
 
-		assert_eq!(
-			parser.parse(r#""hello world""#).unwrap(),
-			((r#"hello world"#.to_string(), TerminalNodeType::String), "")
-		);
+		let (a, r) = parser.parse(r#""hello world""#).unwrap();
+		assert_eq!(r, "");
+		a.assert_value("hello world");
+		a.node_type().assert_string();
 	}
 }
