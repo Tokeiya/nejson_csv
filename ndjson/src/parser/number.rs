@@ -1,4 +1,4 @@
-use crate::syntax_node::terminal_value_type::TerminalNodeType;
+use crate::syntax_node::prelude::*;
 use combine as cmb;
 use combine::parser::char as chr;
 use combine::{Parser, Stream};
@@ -56,7 +56,7 @@ fn exponent<I: Stream<Token = char>>() -> impl Parser<I, Output = String> {
 	})
 }
 
-pub fn number<I: Stream<Token = char>>() -> impl Parser<I, Output = (String, TerminalNodeType)> {
+pub fn number<I: Stream<Token = char>>() -> impl Parser<I, Output = TerminalNode> {
 	(
 		integer::<I>(),
 		cmb::optional::<I, _>(fraction()),
@@ -83,9 +83,9 @@ pub fn number<I: Stream<Token = char>>() -> impl Parser<I, Output = (String, Ter
 			}
 
 			if is_int {
-				(buff, TerminalNodeType::Integer)
+				TerminalNode::new(TerminalNodeType::Integer, buff)
 			} else {
-				(buff, TerminalNodeType::Float)
+				TerminalNode::new(TerminalNodeType::Float, buff)
 			}
 		})
 }
@@ -153,12 +153,11 @@ mod test {
 	#[test]
 	fn number() {
 		fn assert(
-			((actual, terminal_type), rem): ((String, TerminalNodeType), &str),
+			(act, rem): (TerminalNode, &str),
 			expected: &str,
 			expected_type: TerminalNodeType,
 		) {
-			assert_eq!(actual, expected);
-			assert_eq!(terminal_type, expected_type);
+			act.assert(expected_type, expected);
 			assert_eq!(rem, "");
 		}
 

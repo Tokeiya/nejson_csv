@@ -2,8 +2,8 @@ use crate::syntax_node::prelude::*;
 use combine::parser::char as chr;
 use combine::{Parser, Stream};
 
-pub fn null<I: Stream<Token = char>>() -> impl Parser<I, Output = (String, TerminalNodeType)> {
-	chr::string("null").map(|_| ("null".to_string(), TerminalNodeType::Null))
+pub fn null<I: Stream<Token = char>>() -> impl Parser<I, Output = TerminalNode> {
+	chr::string("null").map(|_| TerminalNode::new(TerminalNodeType::Null, "null".to_string()))
 }
 
 #[cfg(test)]
@@ -12,10 +12,9 @@ mod test {
 	#[test]
 	fn null() {
 		let mut parser = super::null::<&str>();
-		let ((v, t), rem) = parser.parse("null").unwrap();
+		let (a, rem) = parser.parse("null").unwrap();
 		assert_eq!(rem, "");
-		assert_eq!(&v, "null");
-		assert_eq!(t, TerminalNodeType::Null);
+		a.assert(TerminalNodeType::Null, "null");
 	}
 
 	#[test]
