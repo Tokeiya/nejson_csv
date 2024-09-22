@@ -43,7 +43,6 @@ fn escaped<I: Stream<Token = char>>() -> impl Parser<I, Output = O> {
 	(chr::char('\\'), code_point.or(escape_identity)).map(|(_, o)| o)
 }
 
-//Quote is captured by the caller
 pub fn string<I: Stream<Token = char>>() -> impl Parser<I, Output = TerminalNode> {
 	(
 		chr::char('"'),
