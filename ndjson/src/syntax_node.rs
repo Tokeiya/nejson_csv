@@ -1,4 +1,5 @@
-pub mod node;
+mod node;
+pub mod node_value;
 pub mod non_terminal_node;
 pub mod non_terminal_value_type;
 mod object_element;
@@ -22,4 +23,5 @@ pub mod test_prelude {
 	};
 
 	pub use super::node::test_helper::{self as node_helper, ws, WS};
+	pub use super::node_value::test_helper as node_value_helper;
 }
