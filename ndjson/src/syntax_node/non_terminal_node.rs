@@ -1,6 +1,5 @@
 use super::object_element::ObjectElement;
 use super::prelude::*;
-use super::terminal_node::TerminalNode;
 
 pub type ArrayNode = NonTerminalNode<Node>;
 pub type ObjectNode = NonTerminalNode<ObjectElement>;

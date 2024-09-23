@@ -45,6 +45,48 @@ mod test {
 
 		let (act, rem) = parser.parse(&str).unwrap();
 		assert_eq!(rem, "");
+		let contents = act.value().extract_contents();
+
+		assert_eq!(contents.len(), 6);
+
+		let piv = &contents[0];
+		piv.key().value().extract_terminal().assert_string("int");
+		piv.value().value().extract_terminal().assert_integer("1");
+		piv.value().assert_lead_trail(None, None);
+		piv.key().assert_lead_trail(None, None);
+
+		let piv = &contents[1];
+		piv.key().value().extract_terminal().assert_string("float");
+		piv.value().value().extract_terminal().assert_float("1.0");
+		piv.value().assert_lead_trail(None, None);
+		piv.key().assert_lead_trail(None, None);
+
+		let piv = &contents[2];
+		piv.key().value().extract_terminal().assert_string("string");
+		piv.value()
+			.value()
+			.extract_terminal()
+			.assert_string("string");
+		piv.value().assert_lead_trail(None, None);
+		piv.key().assert_lead_trail(None, None);
+
+		let piv = &contents[3];
+		piv.key().value().extract_terminal().assert_string("null");
+		piv.value().value().extract_terminal().assert_null();
+		piv.value().assert_lead_trail(None, None);
+		piv.key().assert_lead_trail(None, None);
+
+		let piv = &contents[4];
+		piv.key().value().extract_terminal().assert_string("true");
+		piv.value().value().extract_terminal().assert_true();
+		piv.value().assert_lead_trail(None, None);
+		piv.key().assert_lead_trail(None, None);
+
+		let piv = &contents[5];
+		piv.key().value().extract_terminal().assert_string("false");
+		piv.value().value().extract_terminal().assert_false();
+		piv.value().assert_lead_trail(None, None);
+		piv.key().assert_lead_trail(None, None);
 	}
 
 	#[test]
