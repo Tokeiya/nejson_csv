@@ -125,7 +125,11 @@ mod test {
 	fn object_new() {
 		let node = ObjectNode::new(vec![
 			ObjectElement::new(
-				TerminalNode::String("foo".to_string()),
+				Node::new(
+					NodeValue::Terminal(TerminalNode::String("foo".to_string())),
+					ws(),
+					ws(),
+				),
 				Node::new(
 					NodeValue::Terminal(TerminalNode::Integer("42".to_string())),
 					ws(),
@@ -133,7 +137,11 @@ mod test {
 				),
 			),
 			ObjectElement::new(
-				TerminalNode::String("bar".to_string()),
+				Node::new(
+					NodeValue::Terminal(TerminalNode::String("bar".to_string())),
+					ws(),
+					ws(),
+				),
 				Node::new(
 					NodeValue::Terminal(TerminalNode::Float("42.195".to_string())),
 					ws(),
@@ -179,7 +187,11 @@ mod test {
 
 		let node = ObjectNode::new(vec![
 			ObjectElement::new(
-				TerminalNode::String("foo".to_string()),
+				Node::new(
+					NodeValue::Terminal(TerminalNode::String("foo".to_string())),
+					ws(),
+					ws(),
+				),
 				Node::new(
 					NodeValue::Terminal(TerminalNode::Integer("42".to_string())),
 					ws(),
@@ -187,7 +199,11 @@ mod test {
 				),
 			),
 			ObjectElement::new(
-				TerminalNode::String("bar".to_string()),
+				Node::new(
+					NodeValue::Terminal(TerminalNode::String("bar".to_string())),
+					ws(),
+					ws(),
+				),
 				Node::new(
 					NodeValue::Terminal(TerminalNode::Float("42.195".to_string())),
 					ws(),

@@ -3,16 +3,16 @@ use super::prelude::*;
 use super::terminal_node::TerminalNode;
 
 pub struct ObjectElement {
-	key: TerminalNode,
+	key: Node,
 	value: Node,
 }
 
 impl ObjectElement {
-	pub fn new(key: TerminalNode, value: Node) -> Self {
+	pub fn new(key: Node, value: Node) -> Self {
 		ObjectElement { key, value }
 	}
 
-	pub fn key(&self) -> &TerminalNode {
+	pub fn key(&self) -> &Node {
 		&self.key
 	}
 
@@ -28,10 +28,12 @@ pub mod test_helper {
 	impl ObjectElement {
 		pub fn assert_key(&self, value: &str) {
 			let key = &self.key;
-			key.assert_string(value);
+			key.assert_lead_trail(None, None);
+			key.value().extract_terminal().assert_string(value);
 
 			let key = &self.key();
-			key.assert_string(value);
+			key.value().extract_terminal().assert_string(value);
+			key.assert_lead_trail(None, None);
 		}
 	}
 }
@@ -43,7 +45,11 @@ mod test {
 
 	#[test]
 	fn new() {
-		let key = TerminalNode::String("key".to_string());
+		let key = Node::new(
+			NodeValue::Terminal(TerminalNode::String("key".to_string())),
+			ws(),
+			ws(),
+		);
 		let value = Node::new(
 			NodeValue::Terminal(TerminalNode::String("value".to_string())),
 			ws(),
