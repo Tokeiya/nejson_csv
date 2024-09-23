@@ -58,7 +58,7 @@ pub fn string<I: Stream<Token = char>>() -> impl Parser<I, Output = TerminalNode
 					O::String(s) => buff.push_str(&s),
 				}
 			}
-			TerminalNode::new(TerminalNodeType::String, buff)
+			TerminalNode::String(buff)
 		})
 }
 
@@ -153,22 +153,18 @@ mod test {
 		let (a, r) = parser.parse(r#""foo""#).unwrap();
 
 		assert_eq!(r, "");
-		a.assert_value("foo");
-		a.node_type().assert_string();
+		a.assert_string("foo");
 
 		let (a, r) = parser.parse(r#""\u0041\u0061""#).unwrap();
-		a.assert_value(r#"\u0041\u0061"#);
-		a.node_type().assert_string();
+		a.assert_string(r#"\u0041\u0061"#);
 		assert_eq!(r, "");
 
 		let (a, r) = parser.parse(r#""\"\\\/\b\f\n\r\t\u0061""#).unwrap();
 		assert_eq!(r, "");
-		a.assert_value(r#"\"\\\/\b\f\n\r\t\u0061"#);
-		a.node_type().assert_string();
+		a.assert_string(r#"\"\\\/\b\f\n\r\t\u0061"#);
 
 		let (a, r) = parser.parse(r#""hello world""#).unwrap();
 		assert_eq!(r, "");
-		a.assert_value("hello world");
-		a.node_type().assert_string();
+		a.assert_string("hello world");
 	}
 }

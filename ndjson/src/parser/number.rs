@@ -83,9 +83,9 @@ pub fn number<I: Stream<Token = char>>() -> impl Parser<I, Output = TerminalNode
 			}
 
 			if is_int {
-				TerminalNode::new(TerminalNodeType::Integer, buff)
+				TerminalNode::Integer(buff)
 			} else {
-				TerminalNode::new(TerminalNodeType::Float, buff)
+				TerminalNode::Float(buff)
 			}
 		})
 }
@@ -152,147 +152,111 @@ mod test {
 
 	#[test]
 	fn number() {
-		fn assert(
-			(act, rem): (TerminalNode, &str),
-			expected: &str,
-			expected_type: TerminalNodeType,
-		) {
-			act.assert(expected_type, expected);
-			assert_eq!(rem, "");
-		}
-
 		let mut parser = super::number::<&str>();
 
-		assert(parser.parse("0").unwrap(), "0", TerminalNodeType::Integer);
-		assert(parser.parse("-0").unwrap(), "-0", TerminalNodeType::Integer);
+		let (a, r) = parser.parse("0").unwrap();
+		assert_eq!(r, "");
+		a.assert_integer("0");
 
-		assert(parser.parse("42").unwrap(), "42", TerminalNodeType::Integer);
-		assert(
-			parser.parse("-42").unwrap(),
-			"-42",
-			TerminalNodeType::Integer,
-		);
+		let (a, r) = parser.parse("-0").unwrap();
+		assert_eq!(r, "");
+		a.assert_integer("-0");
 
-		assert(
-			parser.parse("42.195").unwrap(),
-			"42.195",
-			TerminalNodeType::Float,
-		);
-		assert(
-			parser.parse("-42.195").unwrap(),
-			"-42.195",
-			TerminalNodeType::Float,
-		);
+		let (a, r) = parser.parse("42").unwrap();
+		assert_eq!(r, "");
+		a.assert_integer("42");
 
-		assert(
-			parser.parse("42e3").unwrap(),
-			"42e3",
-			TerminalNodeType::Float,
-		);
-		assert(
-			parser.parse("-42e3").unwrap(),
-			"-42e3",
-			TerminalNodeType::Float,
-		);
+		let (a, r) = parser.parse("-42").unwrap();
+		assert_eq!(r, "");
+		a.assert_integer("-42");
 
-		assert(
-			parser.parse("42E3").unwrap(),
-			"42E3",
-			TerminalNodeType::Float,
-		);
-		assert(
-			parser.parse("-42E3").unwrap(),
-			"-42E3",
-			TerminalNodeType::Float,
-		);
+		let (a, r) = parser.parse("42.195").unwrap();
+		assert_eq!(r, "");
+		a.assert_float("42.195");
 
-		assert(
-			parser.parse("42e+3").unwrap(),
-			"42e+3",
-			TerminalNodeType::Float,
-		);
-		assert(
-			parser.parse("-42e+3").unwrap(),
-			"-42e+3",
-			TerminalNodeType::Float,
-		);
+		let (a, r) = parser.parse("-42.195").unwrap();
+		assert_eq!(r, "");
+		a.assert_float("-42.195");
 
-		assert(
-			parser.parse("42E+3").unwrap(),
-			"42E+3",
-			TerminalNodeType::Float,
-		);
-		assert(
-			parser.parse("-42E+3").unwrap(),
-			"-42E+3",
-			TerminalNodeType::Float,
-		);
+		let (a, r) = parser.parse("42e3").unwrap();
+		assert_eq!(r, "");
+		a.assert_float("42e3");
 
-		assert(
-			parser.parse("42e-3").unwrap(),
-			"42e-3",
-			TerminalNodeType::Float,
-		);
-		assert(
-			parser.parse("-42e-3").unwrap(),
-			"-42e-3",
-			TerminalNodeType::Float,
-		);
+		let (a, r) = parser.parse("-42e3").unwrap();
+		assert_eq!(r, "");
+		a.assert_float("-42e3");
 
-		assert(
-			parser.parse("42.195E-3").unwrap(),
-			"42.195E-3",
-			TerminalNodeType::Float,
-		);
-		assert(
-			parser.parse("-42.195E-3").unwrap(),
-			"-42.195E-3",
-			TerminalNodeType::Float,
-		);
+		let (a, r) = parser.parse("42E3").unwrap();
+		assert_eq!(r, "");
+		a.assert_float("42E3");
 
-		assert(
-			parser.parse("42.195e-3").unwrap(),
-			"42.195e-3",
-			TerminalNodeType::Float,
-		);
-		assert(
-			parser.parse("-42.195e-3").unwrap(),
-			"-42.195e-3",
-			TerminalNodeType::Float,
-		);
+		let (a, r) = parser.parse("-42E3").unwrap();
+		assert_eq!(r, "");
+		a.assert_float("-42E3");
 
-		assert(
-			parser.parse("42.195E+3").unwrap(),
-			"42.195E+3",
-			TerminalNodeType::Float,
-		);
-		assert(
-			parser.parse("-42.195E+3").unwrap(),
-			"-42.195E+3",
-			TerminalNodeType::Float,
-		);
+		let (a, r) = parser.parse("42e+3").unwrap();
+		assert_eq!(r, "");
+		a.assert_float("42e+3");
 
-		assert(
-			parser.parse("42.195e+3").unwrap(),
-			"42.195e+3",
-			TerminalNodeType::Float,
-		);
-		assert(
-			parser.parse("-42.195e+3").unwrap(),
-			"-42.195e+3",
-			TerminalNodeType::Float,
-		);
+		let (a, r) = parser.parse("-42e+3").unwrap();
+		assert_eq!(r, "");
+		a.assert_float("-42e+3");
 
-		assert(
-			parser.parse("42.195e3").unwrap(),
-			"42.195e3",
-			TerminalNodeType::Float,
-		);
-		assert(
-			parser.parse("-42.195e3").unwrap(),
-			"-42.195e3",
-			TerminalNodeType::Float,
-		);
+		let (a, r) = parser.parse("42E+3").unwrap();
+		assert_eq!(r, "");
+		a.assert_float("42E+3");
+
+		let (a, r) = parser.parse("-42E+3").unwrap();
+		assert_eq!(r, "");
+		a.assert_float("-42E+3");
+
+		let (a, r) = parser.parse("42e-3").unwrap();
+		assert_eq!(r, "");
+		a.assert_float("42e-3");
+
+		let (a, r) = parser.parse("-42e-3").unwrap();
+		assert_eq!(r, "");
+		a.assert_float("-42e-3");
+
+		let (a, r) = parser.parse("42.195E-3").unwrap();
+		assert_eq!(r, "");
+		a.assert_float("42.195E-3");
+
+		let (a, r) = parser.parse("-42.195E-3").unwrap();
+		assert_eq!(r, "");
+		a.assert_float("-42.195E-3");
+
+		let (a, r) = parser.parse("42.195e-3").unwrap();
+		assert_eq!(r, "");
+		a.assert_float("42.195e-3");
+
+		let (a, r) = parser.parse("-42.195e-3").unwrap();
+		assert_eq!(r, "");
+		a.assert_float("-42.195e-3");
+
+		let (a, r) = parser.parse("42.195E+3").unwrap();
+		assert_eq!(r, "");
+		a.assert_float("42.195E+3");
+
+		let (a, r) = parser.parse("-42.195E+3").unwrap();
+		assert_eq!(r, "");
+		a.assert_float("-42.195E+3");
+
+		let (a, r) = parser.parse("42.195e3").unwrap();
+		assert_eq!(r, "");
+		a.assert_float("42.195e3");
+
+		let (a, r) = parser.parse("42.195E3").unwrap();
+		assert_eq!(r, "");
+		a.assert_float("42.195E3");
+
+		let (a, r) = parser.parse("-42.195e3").unwrap();
+		assert_eq!(r, "");
+		a.assert_float("-42.195e3");
+
+		let (a, r) = parser.parse("-42.195E3").unwrap();
+		assert_eq!(r, "");
+		a.assert_float("-42.195E3");
 
 		assert!(parser.parse("-42.").is_err());
 		assert!(parser.parse("-42.e3").is_err());

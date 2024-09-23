@@ -3,7 +3,7 @@ use combine::parser::char as chr;
 use combine::{Parser, Stream};
 
 pub fn null<I: Stream<Token = char>>() -> impl Parser<I, Output = TerminalNode> {
-	chr::string("null").map(|_| TerminalNode::new(TerminalNodeType::Null, "null".to_string()))
+	chr::string("null").map(|_| TerminalNode::Null())
 }
 
 #[cfg(test)]
@@ -14,7 +14,7 @@ mod test {
 		let mut parser = super::null::<&str>();
 		let (a, rem) = parser.parse("null").unwrap();
 		assert_eq!(rem, "");
-		a.assert(TerminalNodeType::Null, "null");
+		a.assert_null();
 	}
 
 	#[test]
