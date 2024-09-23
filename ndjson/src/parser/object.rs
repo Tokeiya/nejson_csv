@@ -14,20 +14,38 @@ mod test {
 	use super::*;
 	use crate::syntax_node::prelude::*;
 	use crate::syntax_node::test_prelude::*;
-	fn generate(scr: Vec<(&str, &str)>) -> String {
-		let mut buffer = String::from('{');
 
-		for (key, value) in scr {
-			buffer.push_str(&format!(r##"{WS}"{key}"{WS}:{WS}{value}{WS},"##));
+	fn generate_simple() -> String {
+		fn g(scr: Vec<(&str, &str)>) -> String {
+			let mut buffer = String::from('{');
+
+			for (key, value) in scr {
+				buffer.push_str(&format!(r##"{WS}"{key}"{WS}:{WS}{value}{WS},"##));
+			}
+
+			buffer.remove(buffer.len() - 1);
+			buffer.push('}');
+			buffer
 		}
 
-		buffer.remove(buffer.len() - 1);
-		buffer.push('}');
-		buffer
+		g(vec![
+			("int", "1"),
+			("float", "1.0"),
+			("string", r#""string""#),
+			("null", "null"),
+			("true", "true"),
+			("false", "false"),
+		])
 	}
 
 	#[test]
-	fn object() {}
+	fn object() {
+		let str = generate_simple();
+		let mut parser = super::object::<&str>();
+
+		let (act, rem) = parser.parse(&str).unwrap();
+		assert_eq!(rem, "");
+	}
 
 	#[test]
 	fn empty() {

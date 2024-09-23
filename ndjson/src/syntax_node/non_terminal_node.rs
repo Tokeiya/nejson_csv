@@ -1,4 +1,3 @@
-use super::non_terminal_value_type::NonTerminalNodeType;
 use super::object_element::ObjectElement;
 use super::prelude::*;
 use super::terminal_node::TerminalNode;
@@ -12,21 +11,18 @@ pub enum NonTerminalNodeValue<T> {
 }
 
 pub struct NonTerminalNode<T> {
-	node_type: NonTerminalNodeType,
 	value: NonTerminalNodeValue<T>,
 }
 
 impl NonTerminalNode<Node> {
 	pub fn new(value: Vec<Node>) -> Self {
 		Self {
-			node_type: NonTerminalNodeType::Array,
 			value: NonTerminalNodeValue::Contents(value),
 		}
 	}
 
 	pub fn empty(white_space: String) -> Self {
 		Self {
-			node_type: NonTerminalNodeType::Array,
 			value: NonTerminalNodeValue::Empty(white_space),
 		}
 	}
@@ -35,14 +31,12 @@ impl NonTerminalNode<Node> {
 impl NonTerminalNode<ObjectElement> {
 	pub fn new(value: Vec<ObjectElement>) -> Self {
 		Self {
-			node_type: NonTerminalNodeType::Object,
 			value: NonTerminalNodeValue::Contents(value),
 		}
 	}
 
 	pub fn empty(white_space: String) -> Self {
 		Self {
-			node_type: NonTerminalNodeType::Object,
 			value: NonTerminalNodeValue::Empty(white_space),
 		}
 	}
@@ -51,10 +45,6 @@ impl NonTerminalNode<ObjectElement> {
 impl<T> NonTerminalNode<T> {
 	pub fn value(&self) -> &NonTerminalNodeValue<T> {
 		&self.value
-	}
-
-	pub fn node_type(&self) -> NonTerminalNodeType {
-		self.node_type
 	}
 }
 #[cfg(test)]
@@ -105,7 +95,6 @@ mod test {
 	#[test]
 	fn array_new() {
 		let node = array_fixture();
-		assert_eq!(node.node_type(), NonTerminalNodeType::Array);
 
 		let contents = node.value().extract_contents();
 		assert_eq!(contents.len(), 2);
@@ -149,7 +138,6 @@ mod test {
 				),
 			),
 		]);
-		assert_eq!(node.node_type(), NonTerminalNodeType::Object);
 
 		let contents = node.value().extract_contents();
 		assert_eq!(contents.len(), 2);

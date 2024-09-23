@@ -1,14 +1,12 @@
 mod node;
 pub mod node_value;
 pub mod non_terminal_node;
-pub mod non_terminal_value_type;
 mod object_element;
 pub mod terminal_node;
 
 pub mod prelude {
 	pub use super::node::Node;
 	pub use super::non_terminal_node::{ArrayNode, ObjectNode};
-	pub use super::non_terminal_value_type::NonTerminalNodeType;
 	pub use super::terminal_node::TerminalNode;
 }
 
