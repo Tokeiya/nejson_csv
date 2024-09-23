@@ -83,25 +83,18 @@ pub mod test_helper {
 mod test {
 	use super::super::node_value::NodeValue;
 	use super::*;
-	use crate::syntax_node::prelude::TerminalNodeType;
 	use crate::syntax_node::prelude::*;
 	use crate::syntax_node::test_prelude::*;
 
 	fn array_fixture() -> ArrayNode {
 		let arr = vec![
 			Node::new(
-				NodeValue::Terminal(TerminalNode::new(
-					TerminalNodeType::String,
-					"foo".to_string(),
-				)),
+				NodeValue::Terminal(TerminalNode::String("foo".to_string())),
 				ws(),
 				ws(),
 			),
 			Node::new(
-				NodeValue::Terminal(TerminalNode::new(
-					TerminalNodeType::Integer,
-					"42".to_string(),
-				)),
+				NodeValue::Terminal(TerminalNode::Integer("42".to_string())),
 				ws(),
 				ws(),
 			),
@@ -116,21 +109,11 @@ mod test {
 
 		let contents = node.value().extract_contents();
 		assert_eq!(contents.len(), 2);
-		contents[0].value().extract_terminal().assert_value("foo");
-		contents[0]
-			.value()
-			.extract_terminal()
-			.node_type()
-			.assert_string();
+		contents[0].value().extract_terminal().assert_string("foo");
 		contents[0].assert_trail(None);
 		contents[0].assert_lead(None);
 
-		contents[1]
-			.value()
-			.extract_terminal()
-			.node_type()
-			.assert_integer();
-		contents[1].value().extract_terminal().assert_value("42");
+		contents[1].value().extract_terminal().assert_integer("42");
 		contents[1].assert_trail(None);
 		contents[1].assert_lead(None);
 
@@ -142,23 +125,17 @@ mod test {
 	fn object_new() {
 		let node = ObjectNode::new(vec![
 			ObjectElement::new(
-				TerminalNode::new(TerminalNodeType::String, "foo".to_string()),
+				TerminalNode::String("foo".to_string()),
 				Node::new(
-					NodeValue::Terminal(TerminalNode::new(
-						TerminalNodeType::Integer,
-						"42".to_string(),
-					)),
+					NodeValue::Terminal(TerminalNode::Integer("42".to_string())),
 					ws(),
 					ws(),
 				),
 			),
 			ObjectElement::new(
-				TerminalNode::new(TerminalNodeType::String, "bar".to_string()),
+				TerminalNode::String("bar".to_string()),
 				Node::new(
-					NodeValue::Terminal(TerminalNode::new(
-						TerminalNodeType::Float,
-						"42.195".to_string(),
-					)),
+					NodeValue::Terminal(TerminalNode::Float("42.195".to_string())),
 					ws(),
 					ws(),
 				),
@@ -174,13 +151,7 @@ mod test {
 			.value()
 			.value()
 			.extract_terminal()
-			.assert_value("42");
-		contents[0]
-			.value()
-			.value()
-			.extract_terminal()
-			.node_type()
-			.assert_integer();
+			.assert_integer("42");
 
 		contents[1].assert_key("bar");
 
@@ -188,14 +159,7 @@ mod test {
 			.value()
 			.value()
 			.extract_terminal()
-			.assert(TerminalNodeType::Float, "42.195");
-
-		contents[1]
-			.value()
-			.value()
-			.extract_terminal()
-			.node_type()
-			.assert_float();
+			.assert_float("42.195");
 
 		let node = ObjectNode::empty("space".to_string());
 		node.value.assert_empty("space");
@@ -208,36 +172,24 @@ mod test {
 		assert_eq!(array.len(), 2);
 
 		array[0].assert_lead_trail(None, None);
-		array[0]
-			.value()
-			.extract_terminal()
-			.assert(TerminalNodeType::String, "foo");
+		array[0].value().extract_terminal().assert_string("foo");
 
 		array[1].assert_lead_trail(None, None);
-		array[1]
-			.value()
-			.extract_terminal()
-			.assert(TerminalNodeType::Integer, "42");
+		array[1].value().extract_terminal().assert_integer("42");
 
 		let node = ObjectNode::new(vec![
 			ObjectElement::new(
-				TerminalNode::new(TerminalNodeType::String, "foo".to_string()),
+				TerminalNode::String("foo".to_string()),
 				Node::new(
-					NodeValue::Terminal(TerminalNode::new(
-						TerminalNodeType::Integer,
-						"42".to_string(),
-					)),
+					NodeValue::Terminal(TerminalNode::Integer("42".to_string())),
 					ws(),
 					ws(),
 				),
 			),
 			ObjectElement::new(
-				TerminalNode::new(TerminalNodeType::String, "bar".to_string()),
+				TerminalNode::String("bar".to_string()),
 				Node::new(
-					NodeValue::Terminal(TerminalNode::new(
-						TerminalNodeType::Float,
-						"42.195".to_string(),
-					)),
+					NodeValue::Terminal(TerminalNode::Float("42.195".to_string())),
 					ws(),
 					ws(),
 				),
@@ -253,7 +205,7 @@ mod test {
 			.value()
 			.value()
 			.extract_terminal()
-			.assert(TerminalNodeType::Integer, "42");
+			.assert_integer("42");
 
 		object[1].value().assert_lead_trail(None, None);
 		object[1].assert_key("bar");
@@ -261,6 +213,6 @@ mod test {
 			.value()
 			.value()
 			.extract_terminal()
-			.assert(TerminalNodeType::Float, "42.195");
+			.assert_float("42.195");
 	}
 }

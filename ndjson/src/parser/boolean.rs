@@ -7,9 +7,9 @@ pub fn boolean<I: Stream<Token = char>>() -> impl Parser<I, Output = TerminalNod
 		.or(chr::string::<I>("false"))
 		.map(|str| {
 			if str == "true" {
-				TerminalNode::new(TerminalNodeType::Boolean, "true".to_string())
+				TerminalNode::Boolean("true".to_string())
 			} else if str == "false" {
-				TerminalNode::new(TerminalNodeType::Boolean, "false".to_string())
+				TerminalNode::Boolean("false".to_string())
 			} else {
 				unreachable!()
 			}
@@ -25,11 +25,11 @@ mod test {
 		let mut parser = super::boolean::<&str>();
 		let (a, rem) = parser.parse("true").unwrap();
 		assert_eq!(rem, "");
-		a.assert(TerminalNodeType::Boolean, "true");
+		a.assert_boolean("true");
 
 		let (a, rem) = parser.parse("false").unwrap();
 		assert_eq!(rem, "");
-		a.assert(TerminalNodeType::Boolean, "false");
+		a.assert_boolean("false");
 	}
 
 	#[test]

@@ -64,16 +64,19 @@ mod test {
 	use super::*;
 	#[test]
 	fn new() {
-		let v = NodeValue::Terminal(TerminalNode::new(
-			TerminalNodeType::String,
-			"hello world".to_string(),
-		));
+		let v = NodeValue::Terminal(TerminalNode::String("hello world".to_string()));
 		let fixture = Node::new(v, ws(), ws());
 
-		assert_eq!(fixture.value.extract_terminal().value(), "hello world");
+		fixture
+			.value
+			.extract_terminal()
+			.assert_string("hello world");
 		fixture.assert_trail(None);
 		fixture.assert_lead(None);
 
-		assert_eq!(fixture.value().extract_terminal().value(), "hello world");
+		fixture
+			.value()
+			.extract_terminal()
+			.assert_string("hello world");
 	}
 }

@@ -43,33 +43,27 @@ mod test {
 
 		let piv = &act[0];
 		piv.assert_lead_trail(None, None);
-		piv.value().extract_terminal().assert_value("rust");
-		piv.value().extract_terminal().node_type().assert_string();
+		piv.value().extract_terminal().assert_string("rust");
 
 		let piv = &act[1];
 		piv.assert_lead_trail(None, None);
-		piv.value().extract_terminal().assert_value("42");
-		piv.value().extract_terminal().node_type().assert_integer();
+		piv.value().extract_terminal().assert_integer("42");
 
 		let piv = &act[2];
 		piv.assert_lead_trail(None, None);
-		piv.value().extract_terminal().assert_value("null");
-		piv.value().extract_terminal().node_type().assert_null();
+		piv.value().extract_terminal().assert_null();
 
 		let piv = &act[3];
 		piv.assert_lead_trail(None, None);
-		piv.value().extract_terminal().assert_value("true");
-		piv.value().extract_terminal().node_type().assert_boolean();
+		piv.value().extract_terminal().assert_boolean("true");
 
 		let piv = &act[4];
 		piv.assert_lead_trail(None, None);
-		piv.value().extract_terminal().assert_value("false");
-		piv.value().extract_terminal().node_type().assert_boolean();
+		piv.value().extract_terminal().assert_boolean("false");
 
 		let piv = &act[5];
 		piv.assert_lead_trail(None, None);
-		piv.value().extract_terminal().assert_value("42.195");
-		piv.value().extract_terminal().node_type().assert_float();
+		piv.value().extract_terminal().assert_float("42.195");
 	}
 
 	#[test]

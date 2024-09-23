@@ -23,18 +23,15 @@ impl ObjectElement {
 
 #[cfg(test)]
 pub mod test_helper {
-	use super::super::terminal_value_type::TerminalNodeType;
 	use super::*;
 
 	impl ObjectElement {
 		pub fn assert_key(&self, value: &str) {
 			let key = &self.key;
-			assert_eq!(key.value(), value);
-			assert_eq!(key.node_type(), TerminalNodeType::String);
+			key.assert_string(value);
 
 			let key = &self.key();
-			assert_eq!(key.value(), value);
-			assert_eq!(key.node_type(), TerminalNodeType::String);
+			key.assert_string(value);
 		}
 	}
 }
@@ -42,17 +39,13 @@ pub mod test_helper {
 #[cfg(test)]
 mod test {
 	use super::*;
-	use crate::syntax_node::prelude::TerminalNodeType;
 	use crate::syntax_node::test_prelude::ws;
 
 	#[test]
 	fn new() {
-		let key = TerminalNode::new(TerminalNodeType::String, "key".to_string());
+		let key = TerminalNode::String("key".to_string());
 		let value = Node::new(
-			NodeValue::Terminal(TerminalNode::new(
-				TerminalNodeType::String,
-				"value".to_string(),
-			)),
+			NodeValue::Terminal(TerminalNode::String("value".to_string())),
 			ws(),
 			ws(),
 		);
@@ -65,12 +58,12 @@ mod test {
 			.value
 			.value()
 			.extract_terminal()
-			.assert(TerminalNodeType::String, "value");
+			.assert_string("value");
 
 		object_element
 			.value()
 			.value()
 			.extract_terminal()
-			.assert(TerminalNodeType::String, "value");
+			.assert_string("value");
 	}
 }
