@@ -55,11 +55,11 @@ mod test {
 
 		let piv = &act[3];
 		piv.assert_lead_trail(None, None);
-		piv.value().extract_terminal().assert_boolean("true");
+		piv.value().extract_terminal().assert_true();
 
 		let piv = &act[4];
 		piv.assert_lead_trail(None, None);
-		piv.value().extract_terminal().assert_boolean("false");
+		piv.value().extract_terminal().assert_false();
 
 		let piv = &act[5];
 		piv.assert_lead_trail(None, None);

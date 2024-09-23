@@ -1,5 +1,6 @@
 pub enum TerminalNode {
-	Boolean(String),
+	True(),
+	False(),
 	Float(String),
 	Integer(String),
 	String(String),
@@ -18,11 +19,12 @@ pub mod test_helper {
 			assert_eq!(s, expected)
 		}
 
-		pub fn assert_boolean(&self, expected: &str) {
-			let Self::Boolean(a) = self else {
-				unreachable!()
-			};
-			assert_eq!(a, expected)
+		pub fn assert_true(&self) {
+			let Self::True() = self else { unreachable!() };
+		}
+
+		pub fn assert_false(&self) {
+			let Self::False() = self else { unreachable!() };
 		}
 
 		pub fn assert_float(&self, expected: &str) {
