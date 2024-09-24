@@ -35,7 +35,6 @@ parser! {
 #[cfg(test)]
 mod test {
 	use super::*;
-	use crate::syntax_node::prelude::*;
 	use crate::syntax_node::test_prelude::*;
 
 	fn add_ws(s: &str) -> String {

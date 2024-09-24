@@ -72,7 +72,6 @@ pub mod test_helper {
 mod test {
 	use super::super::node_value::NodeValue;
 	use super::*;
-	use crate::syntax_node::prelude::*;
 	use crate::syntax_node::test_prelude::*;
 
 	fn array_fixture() -> ArrayNode {

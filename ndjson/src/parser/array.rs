@@ -1,11 +1,6 @@
 use super::value::{value, ws};
-use crate::syntax_node::prelude;
 use crate::syntax_node::prelude::*;
-use combine::{
-	self as cmb,
-	parser::{self as psr, char as chr},
-	Parser, Stream,
-};
+use combine::{self as cmb, parser::char as chr, Parser, Stream};
 
 fn first<I: Stream<Token = char>>() -> impl Parser<I, Output = Node> {
 	value::<I>()
