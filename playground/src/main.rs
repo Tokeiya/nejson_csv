@@ -1,34 +1,19 @@
-use combine as cmb;
-use combine::parser::char as chr;
-use combine::{ParseError, Parser};
+use ndjson::parser::value_parser;
+use ndjson::syntax_node::prelude::*;
 
-fn letters<'a>() -> impl Parser<&'a str, Output = String> {
-	cmb::many1(chr::letter())
-}
-
-fn digits<'a>() -> impl Parser<&'a str, Output = String> {
-	cmb::many1(chr::digit())
-}
-
-fn ws<'a>() -> impl Parser<&'a str, Output = String> {
-	chr::spaces().map(|_| "empty".to_string())
-}
+use combine::Parser;
+use std::fs::File;
+use std::io::{self, BufReader, Read};
 
 fn main() {
-	let emp = ws().skip(cmb::not_followed_by::<&str, _>(chr::alpha_num()));
-	let val = (ws(), chr::alpha_num()).map(|(_, c)| c.to_string());
+	let file = File::open("./artifact/sample.json").unwrap();
+	let mut rdr = BufReader::new(file);
 
-	let mut foo = cmb::attempt(emp).or(val);
+	let mut text = String::new();
+	let r = rdr.read_to_string(&mut text).unwrap();
 
-	let r = foo.parse("");
-	println!("{r:?}");
+	let mut parser = value_parser::<&str>();
 
-	let r = foo.parse("    ");
-	println!("{r:?}");
-
-	let r = foo.parse("1");
-	println!("{r:?}");
-
-	let r = foo.parse("          1");
-	println!("{r:?}");
+	let (a, r) = parser.parse(&text).unwrap();
+	assert_eq!("", r);
 }

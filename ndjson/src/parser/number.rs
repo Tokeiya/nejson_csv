@@ -66,8 +66,6 @@ pub fn number<I: Stream<Token = char>>() -> impl Parser<I, Output = NodeValue> {
 			let mut is_int = true;
 			let mut buff = i;
 
-			dbg!("num hit");
-
 			match f {
 				None => {}
 				Some(x) => {
