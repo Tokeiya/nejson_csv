@@ -10,15 +10,9 @@ enum O {
 
 fn unescaped<I: Stream<Token = char>>() -> impl Parser<I, Output = O> {
 	cmb::satisfy::<I, _>(|c| {
-		if c >= '\u{20}' && c <= '\u{21}' {
-			true
-		} else if c >= '\u{23}' && c <= '\u{5B}' {
-			true
-		} else if c >= '\u{5D}' && c <= '\u{10FFFF}' {
-			true
-		} else {
-			false
-		}
+		(c >= '\u{20}' && c <= '\u{21}')
+			|| (c >= '\u{23}' && c <= '\u{5B}')
+			|| (c >= '\u{5D}' && c <= '\u{10FFFF}')
 	})
 	.map(|c| O::Char(c))
 }
