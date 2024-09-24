@@ -8,23 +8,36 @@ use combine::{
 };
 
 fn element<I: Stream<Token = char>>() -> impl Parser<I, Output = ObjectElement> {
-	let key = (cmb::look_ahead(string_parser()), value::<I>()).map(|(_, v)| v);
+	let check = (ws::<I>(), string_parser::<I>(), ws::<I>());
+
+	let key = (cmb::look_ahead(check), value::<I>()).map(|(_, v)| v);
 	(key, chr::char(':'), value()).map(|(k, _, v)| ObjectElement::new(k, v))
 }
 
-pub fn object<I: Stream<Token = char>>() -> impl Parser<I, Output = NodeValue> {
-	let elements = (chr::char::<I>(','), element::<I>()).map(|(_, elem)| elem);
-	let elements = cmb::many::<Vec<ObjectElement>, I, _>(elements);
-	let elements = (element::<I>(), elements).map(|(a, b)| {
+fn first<I: Stream<Token = char>>() -> impl Parser<I, Output = ObjectElement> {
+	element::<I>()
+}
+
+fn following<I: Stream<Token = char>>() -> impl Parser<I, Output = Vec<ObjectElement>> {
+	let tmp = (chr::char(','), element()).map(|(_, o)| o);
+	cmb::many::<Vec<ObjectElement>, I, _>(tmp)
+}
+
+fn contents<I: Stream<Token = char>>() -> impl Parser<I, Output = NodeValue> {
+	let empty = ws::<I>().map(|s| NodeValue::Object(ObjectNode::empty(s)));
+
+	let contents = (first::<I>(), following()).map(|(a, b)| {
 		let mut v = b;
 		v.insert(0, a);
+
 		NodeValue::Object(ObjectNode::new(v))
 	});
 
-	let empty = ws().map(|s| NodeValue::Object(ObjectNode::empty(s)));
-	let contents = elements.or(empty);
+	cmb::attempt(contents).or(empty)
+}
 
-	(chr::char('{'), contents, chr::char('}')).map(|(_, c, _)| c)
+pub fn object<I: Stream<Token = char>>() -> impl Parser<I, Output = NodeValue> {
+	(chr::char('{'), contents::<I>(), chr::char('}')).map(|(_, c, _)| c)
 }
 
 #[cfg(test)]
@@ -57,9 +70,87 @@ mod test {
 	}
 
 	#[test]
+	fn single_object() {
+		let mut parser = super::object::<&str>();
+		let (a, r) = parser.parse(r#"{"foo":42.195}"#).unwrap();
+
+		assert_eq!(r, "");
+
+		let obj = a.extract_object().value().extract_contents();
+		assert_eq!(obj.len(), 1);
+
+		obj[0].key().value().extract_terminal().assert_string("foo");
+		obj[0]
+			.value()
+			.value()
+			.extract_terminal()
+			.assert_float("42.195");
+	}
+
+	#[test]
+	fn following() {
+		let mut parser = super::following::<&str>();
+		let (a, r) = parser.parse(r#","key1":1,"key2":true"#).unwrap();
+		assert_eq!(r, "");
+		assert_eq!(a.len(), 2);
+
+		let piv = &a[0];
+		piv.key().value().extract_terminal().assert_string("key1");
+		piv.value().value().extract_terminal().assert_integer("1");
+
+		let piv = &a[1];
+		piv.key().value().extract_terminal().assert_string("key2");
+		piv.value().value().extract_terminal().assert_true();
+	}
+
+	#[test]
+	fn contents() {
+		let mut parser = super::contents::<&str>();
+
+		let (a, r) = parser.parse("").unwrap();
+		assert_eq!(r, "");
+		a.extract_object().value().assert_empty("");
+
+		let (a, r) = parser.parse("   ").unwrap();
+		assert_eq!(r, "");
+		a.extract_object().value().assert_empty("   ");
+
+		let (a, r) = parser.parse(r#"          "key" :null"#).unwrap();
+		assert_eq!(r, "");
+		let a = a.extract_object().value().extract_contents();
+		assert_eq!(a.len(), 1);
+
+		let piv = &a[0];
+		piv.key().value().extract_terminal().assert_string("key");
+		piv.value().value().extract_terminal().assert_null();
+
+		let (a, r) = parser.parse(r#""key":null,"t":true,"f":false"#).unwrap();
+		assert_eq!(r, "");
+		let a = a.extract_object().value().extract_contents();
+		assert_eq!(a.len(), 3);
+
+		let piv = &a[0];
+		piv.key().value().extract_terminal().assert_string("key");
+		piv.value().value().extract_terminal().assert_null();
+
+		let piv = &a[1];
+		piv.key().value().extract_terminal().assert_string("t");
+		piv.value().value().extract_terminal().assert_true();
+
+		let piv = &a[2];
+		piv.key().value().extract_terminal().assert_string("f");
+		piv.value().value().extract_terminal().assert_false();
+	}
+
+	#[test]
 	fn object() {
 		let str = generate_simple();
 		let mut parser = super::object::<&str>();
+
+		let (a, r) = parser
+			.parse(r#"{   "key"    :   42 ,"null":null}"#)
+			.unwrap();
+		assert_eq!(r, "");
 
 		let (act, rem) = parser.parse(&str).unwrap();
 		assert_eq!(rem, "");
@@ -107,6 +198,21 @@ mod test {
 		piv.key().assert_lead_trail(None, None);
 	}
 
+	#[test]
+	fn element() {
+		let mut parser = super::element::<&str>();
+		let (a, r) = parser.parse(r#""key":true"#).unwrap();
+		assert_eq!(r, "");
+		a.key().value().extract_terminal().assert_string("key");
+		a.value().value().extract_terminal().assert_true();
+
+		let (a, r) = parser.parse(r#"   "key"    :    true   "#).unwrap();
+		assert_eq!(r, "");
+		a.key().value().extract_terminal().assert_string("key");
+		a.value().value().extract_terminal().assert_true();
+
+		assert!(parser.parse("40:40").is_err())
+	}
 	#[test]
 	fn empty() {
 		let str = "{}";

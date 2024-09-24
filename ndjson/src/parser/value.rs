@@ -114,7 +114,7 @@ mod test {
 	}
 	#[test]
 	fn array() {
-		let str = add_ws("[1,2,3]");
+		let str = add_ws("[1,  2,3]");
 		let mut parser = super::value::<&str>(); //::<&str>();
 		let (a, rem) = parser.parse(&str).unwrap();
 		assert_eq!(rem, "");
