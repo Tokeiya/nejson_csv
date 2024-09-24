@@ -3,7 +3,6 @@ use super::{array::array, boolean::boolean, null::null, object::object, string::
 use crate::syntax_node::prelude::Node;
 use combine as cmb;
 use combine::parser;
-use combine::parser::char as chr;
 use combine::{Parser, Stream};
 pub fn ws<I: Stream<Token = char>>() -> impl Parser<I, Output = String> {
 	let space = cmb::satisfy::<I, _>(|c| match c {
@@ -157,6 +156,38 @@ mod test {
 			.value()
 			.extract_terminal()
 			.assert_integer("3");
+	}
+
+	#[test]
+	fn complex() {
+		let mut parser = super::value::<&str>();
+		let (a, r) = parser
+			.parse(r#"{"obj"  :{   "o":10}      ,"arr":[1,2,3]}"#)
+			.unwrap();
+		assert_eq!(r, "");
+
+		let obj = a.value().extract_object().value().extract_contents();
+		assert_eq!(obj.len(), 2);
+
+		let piv = &obj[0];
+
+		let inner = piv
+			.value()
+			.value()
+			.extract_object()
+			.value()
+			.extract_contents();
+		assert_eq!(inner.len(), 1);
+		
+		inner[0].key().value().extract_terminal().assert_string("o");
+		
+		inner[0]
+			.value()
+			.value()
+			.extract_terminal()
+			.assert_integer("10");
+		
+		
 	}
 
 	#[test]
