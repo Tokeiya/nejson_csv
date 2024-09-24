@@ -18,7 +18,6 @@ pub fn boolean<I: Stream<Token = char>>() -> impl Parser<I, Output = NodeValue> 
 
 #[cfg(test)]
 mod test {
-
 	use super::*;
 	#[test]
 	fn boolean() {

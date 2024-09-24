@@ -1,5 +1,4 @@
 use super::node_value::NodeValue;
-use super::terminal_node::TerminalNode;
 
 pub struct Node {
 	value: NodeValue,
@@ -61,6 +60,7 @@ pub mod test_helper {
 mod test {
 	use super::super::test_prelude::*;
 	use super::*;
+	use crate::syntax_node::prelude::TerminalNode;
 	#[test]
 	fn new() {
 		let v = NodeValue::Terminal(TerminalNode::String("hello world".to_string()));
