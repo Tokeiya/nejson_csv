@@ -178,16 +178,14 @@ mod test {
 			.value()
 			.extract_contents();
 		assert_eq!(inner.len(), 1);
-		
+
 		inner[0].key().value().extract_terminal().assert_string("o");
-		
+
 		inner[0]
 			.value()
 			.value()
 			.extract_terminal()
 			.assert_integer("10");
-		
-		
 	}
 
 	#[test]
