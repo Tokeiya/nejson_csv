@@ -6,6 +6,7 @@ use std::fs::File;
 use std::io::{self, BufReader, Read};
 
 fn main() {
+<<<<<<< HEAD
 	let file = File::open("./artifact/sample.json").unwrap();
 	let mut rdr = BufReader::new(file);
 
@@ -16,4 +17,8 @@ fn main() {
 
 	let (a, r) = parser.parse(&text).unwrap();
 	assert_eq!("", r);
+=======
+	let x = 10;
+	dbg!(format!("value:{x}"));
+>>>>>>> origin/NDC-3
 }
