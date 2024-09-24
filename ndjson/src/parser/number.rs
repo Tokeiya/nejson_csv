@@ -56,7 +56,7 @@ fn exponent<I: Stream<Token = char>>() -> impl Parser<I, Output = String> {
 	})
 }
 
-pub fn number<I: Stream<Token = char>>() -> impl Parser<I, Output = TerminalNode> {
+pub fn number<I: Stream<Token = char>>() -> impl Parser<I, Output = NodeValue> {
 	(
 		integer::<I>(),
 		cmb::optional::<I, _>(fraction()),
@@ -65,6 +65,8 @@ pub fn number<I: Stream<Token = char>>() -> impl Parser<I, Output = TerminalNode
 		.map(|(i, f, e)| {
 			let mut is_int = true;
 			let mut buff = i;
+
+			dbg!("num hit");
 
 			match f {
 				None => {}
@@ -83,9 +85,9 @@ pub fn number<I: Stream<Token = char>>() -> impl Parser<I, Output = TerminalNode
 			}
 
 			if is_int {
-				TerminalNode::Integer(buff)
+				NodeValue::Terminal(TerminalNode::Integer(buff))
 			} else {
-				TerminalNode::Float(buff)
+				NodeValue::Terminal(TerminalNode::Float(buff))
 			}
 		})
 }
@@ -156,107 +158,107 @@ mod test {
 
 		let (a, r) = parser.parse("0").unwrap();
 		assert_eq!(r, "");
-		a.assert_integer("0");
+		a.extract_terminal().assert_integer("0");
 
 		let (a, r) = parser.parse("-0").unwrap();
 		assert_eq!(r, "");
-		a.assert_integer("-0");
+		a.extract_terminal().assert_integer("-0");
 
 		let (a, r) = parser.parse("42").unwrap();
 		assert_eq!(r, "");
-		a.assert_integer("42");
+		a.extract_terminal().assert_integer("42");
 
 		let (a, r) = parser.parse("-42").unwrap();
 		assert_eq!(r, "");
-		a.assert_integer("-42");
+		a.extract_terminal().assert_integer("-42");
 
 		let (a, r) = parser.parse("42.195").unwrap();
 		assert_eq!(r, "");
-		a.assert_float("42.195");
+		a.extract_terminal().assert_float("42.195");
 
 		let (a, r) = parser.parse("-42.195").unwrap();
 		assert_eq!(r, "");
-		a.assert_float("-42.195");
+		a.extract_terminal().assert_float("-42.195");
 
 		let (a, r) = parser.parse("42e3").unwrap();
 		assert_eq!(r, "");
-		a.assert_float("42e3");
+		a.extract_terminal().assert_float("42e3");
 
 		let (a, r) = parser.parse("-42e3").unwrap();
 		assert_eq!(r, "");
-		a.assert_float("-42e3");
+		a.extract_terminal().assert_float("-42e3");
 
 		let (a, r) = parser.parse("42E3").unwrap();
 		assert_eq!(r, "");
-		a.assert_float("42E3");
+		a.extract_terminal().assert_float("42E3");
 
 		let (a, r) = parser.parse("-42E3").unwrap();
 		assert_eq!(r, "");
-		a.assert_float("-42E3");
+		a.extract_terminal().assert_float("-42E3");
 
 		let (a, r) = parser.parse("42e+3").unwrap();
 		assert_eq!(r, "");
-		a.assert_float("42e+3");
+		a.extract_terminal().assert_float("42e+3");
 
 		let (a, r) = parser.parse("-42e+3").unwrap();
 		assert_eq!(r, "");
-		a.assert_float("-42e+3");
+		a.extract_terminal().assert_float("-42e+3");
 
 		let (a, r) = parser.parse("42E+3").unwrap();
 		assert_eq!(r, "");
-		a.assert_float("42E+3");
+		a.extract_terminal().assert_float("42E+3");
 
 		let (a, r) = parser.parse("-42E+3").unwrap();
 		assert_eq!(r, "");
-		a.assert_float("-42E+3");
+		a.extract_terminal().assert_float("-42E+3");
 
 		let (a, r) = parser.parse("42e-3").unwrap();
 		assert_eq!(r, "");
-		a.assert_float("42e-3");
+		a.extract_terminal().assert_float("42e-3");
 
 		let (a, r) = parser.parse("-42e-3").unwrap();
 		assert_eq!(r, "");
-		a.assert_float("-42e-3");
+		a.extract_terminal().assert_float("-42e-3");
 
 		let (a, r) = parser.parse("42.195E-3").unwrap();
 		assert_eq!(r, "");
-		a.assert_float("42.195E-3");
+		a.extract_terminal().assert_float("42.195E-3");
 
 		let (a, r) = parser.parse("-42.195E-3").unwrap();
 		assert_eq!(r, "");
-		a.assert_float("-42.195E-3");
+		a.extract_terminal().assert_float("-42.195E-3");
 
 		let (a, r) = parser.parse("42.195e-3").unwrap();
 		assert_eq!(r, "");
-		a.assert_float("42.195e-3");
+		a.extract_terminal().assert_float("42.195e-3");
 
 		let (a, r) = parser.parse("-42.195e-3").unwrap();
 		assert_eq!(r, "");
-		a.assert_float("-42.195e-3");
+		a.extract_terminal().assert_float("-42.195e-3");
 
 		let (a, r) = parser.parse("42.195E+3").unwrap();
 		assert_eq!(r, "");
-		a.assert_float("42.195E+3");
+		a.extract_terminal().assert_float("42.195E+3");
 
 		let (a, r) = parser.parse("-42.195E+3").unwrap();
 		assert_eq!(r, "");
-		a.assert_float("-42.195E+3");
+		a.extract_terminal().assert_float("-42.195E+3");
 
 		let (a, r) = parser.parse("42.195e3").unwrap();
 		assert_eq!(r, "");
-		a.assert_float("42.195e3");
+		a.extract_terminal().assert_float("42.195e3");
 
 		let (a, r) = parser.parse("42.195E3").unwrap();
 		assert_eq!(r, "");
-		a.assert_float("42.195E3");
+		a.extract_terminal().assert_float("42.195E3");
 
 		let (a, r) = parser.parse("-42.195e3").unwrap();
 		assert_eq!(r, "");
-		a.assert_float("-42.195e3");
+		a.extract_terminal().assert_float("-42.195e3");
 
 		let (a, r) = parser.parse("-42.195E3").unwrap();
 		assert_eq!(r, "");
-		a.assert_float("-42.195E3");
+		a.extract_terminal().assert_float("-42.195E3");
 
 		assert!(parser.parse("-42.").is_err());
 		assert!(parser.parse("-42.e3").is_err());

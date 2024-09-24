@@ -43,7 +43,7 @@ fn escaped<I: Stream<Token = char>>() -> impl Parser<I, Output = O> {
 	(chr::char('\\'), code_point.or(escape_identity)).map(|(_, o)| o)
 }
 
-pub fn string<I: Stream<Token = char>>() -> impl Parser<I, Output = TerminalNode> {
+pub fn string<I: Stream<Token = char>>() -> impl Parser<I, Output = NodeValue> {
 	(
 		chr::char('"'),
 		cmb::many::<Vec<O>, I, _>(unescaped().or(escaped())),
@@ -58,7 +58,7 @@ pub fn string<I: Stream<Token = char>>() -> impl Parser<I, Output = TerminalNode
 					O::String(s) => buff.push_str(&s),
 				}
 			}
-			TerminalNode::String(buff)
+			NodeValue::Terminal(TerminalNode::String(buff))
 		})
 }
 
@@ -153,18 +153,19 @@ mod test {
 		let (a, r) = parser.parse(r#""foo""#).unwrap();
 
 		assert_eq!(r, "");
-		a.assert_string("foo");
+		a.extract_terminal().assert_string("foo");
 
 		let (a, r) = parser.parse(r#""\u0041\u0061""#).unwrap();
-		a.assert_string(r#"\u0041\u0061"#);
+		a.extract_terminal().assert_string(r#"\u0041\u0061"#);
 		assert_eq!(r, "");
 
 		let (a, r) = parser.parse(r#""\"\\\/\b\f\n\r\t\u0061""#).unwrap();
 		assert_eq!(r, "");
-		a.assert_string(r#"\"\\\/\b\f\n\r\t\u0061"#);
+		a.extract_terminal()
+			.assert_string(r#"\"\\\/\b\f\n\r\t\u0061"#);
 
 		let (a, r) = parser.parse(r#""hello world""#).unwrap();
 		assert_eq!(r, "");
-		a.assert_string("hello world");
+		a.extract_terminal().assert_string("hello world");
 	}
 }

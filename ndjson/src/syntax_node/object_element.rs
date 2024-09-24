@@ -11,11 +11,9 @@ impl ObjectElement {
 	pub fn new(key: Node, value: Node) -> Self {
 		ObjectElement { key, value }
 	}
-
 	pub fn key(&self) -> &Node {
 		&self.key
 	}
-
 	pub fn value(&self) -> &Node {
 		&self.value
 	}

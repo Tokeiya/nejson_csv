@@ -1,3 +1,5 @@
+use super::string::string as string_parser;
+use super::value::{value, ws};
 use crate::syntax_node::prelude::*;
 use combine::{
 	self as cmb,
@@ -5,8 +7,24 @@ use combine::{
 	Parser, Stream,
 };
 
-pub fn object<I: Stream<Token = char>>() -> impl Parser<I, Output = ObjectNode> {
-	chr::char('a').map(|_| todo!())
+fn element<I: Stream<Token = char>>() -> impl Parser<I, Output = ObjectElement> {
+	let key = (cmb::look_ahead(string_parser()), value::<I>()).map(|(_, v)| v);
+	(key, chr::char(':'), value()).map(|(k, _, v)| ObjectElement::new(k, v))
+}
+
+pub fn object<I: Stream<Token = char>>() -> impl Parser<I, Output = NodeValue> {
+	let elements = (chr::char::<I>(','), element::<I>()).map(|(_, elem)| elem);
+	let elements = cmb::many::<Vec<ObjectElement>, I, _>(elements);
+	let elements = (element::<I>(), elements).map(|(a, b)| {
+		let mut v = b;
+		v.insert(0, a);
+		NodeValue::Object(ObjectNode::new(v))
+	});
+
+	let empty = ws().map(|s| NodeValue::Object(ObjectNode::empty(s)));
+	let contents = elements.or(empty);
+
+	(chr::char('{'), contents, chr::char('}')).map(|(_, c, _)| c)
 }
 
 #[cfg(test)]
@@ -45,7 +63,7 @@ mod test {
 
 		let (act, rem) = parser.parse(&str).unwrap();
 		assert_eq!(rem, "");
-		let contents = act.value().extract_contents();
+		let contents = act.extract_object().value().extract_contents();
 
 		assert_eq!(contents.len(), 6);
 
@@ -96,12 +114,20 @@ mod test {
 
 		let (act, rem) = parser.parse(&str).unwrap();
 		assert_eq!(rem, "");
-		act.value().assert_empty("");
+		act.extract_object().value().assert_empty("");
 
 		let str = format!("{{{WS}}}");
 		let mut parser = super::object::<&str>();
 		let (act, rem) = parser.parse(&str).unwrap();
 		assert_eq!(rem, "");
-		act.value().assert_empty(WS);
+		act.extract_object().value().assert_empty(WS);
+	}
+
+	#[test]
+	fn invalid() {
+		let str = "{50:50}";
+		let mut parser = super::object::<&str>();
+
+		assert!(parser.parse(str).is_err())
 	}
 }

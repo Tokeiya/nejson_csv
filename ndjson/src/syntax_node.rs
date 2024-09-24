@@ -6,7 +6,11 @@ pub mod terminal_node;
 
 pub mod prelude {
 	pub use super::node::Node;
-	pub use super::non_terminal_node::{ArrayNode, ObjectNode};
+	pub use super::node_value::NodeValue;
+	pub use super::non_terminal_node::{
+		ArrayNode, NonTerminalNode, NonTerminalNodeValue, ObjectNode,
+	};
+	pub use super::object_element::ObjectElement;
 	pub use super::terminal_node::TerminalNode;
 }
 
@@ -16,4 +20,5 @@ pub mod test_prelude {
 
 	pub use super::node::test_helper::{self as node_helper, ws, WS};
 	pub use super::node_value::test_helper as node_value_helper;
+	pub use super::object_element::test_helper as object_element_helper;
 }

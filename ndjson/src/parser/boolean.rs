@@ -2,14 +2,14 @@ use crate::syntax_node::prelude::*;
 use combine::parser::char as chr;
 use combine::{Parser, Stream};
 
-pub fn boolean<I: Stream<Token = char>>() -> impl Parser<I, Output = TerminalNode> {
+pub fn boolean<I: Stream<Token = char>>() -> impl Parser<I, Output = NodeValue> {
 	chr::string::<I>("true")
 		.or(chr::string::<I>("false"))
 		.map(|str| {
 			if str == "true" {
-				TerminalNode::True()
+				NodeValue::Terminal(TerminalNode::True())
 			} else if str == "false" {
-				TerminalNode::False()
+				NodeValue::Terminal(TerminalNode::False())
 			} else {
 				unreachable!()
 			}
@@ -25,11 +25,11 @@ mod test {
 		let mut parser = super::boolean::<&str>();
 		let (a, rem) = parser.parse("true").unwrap();
 		assert_eq!(rem, "");
-		a.assert_true();
+		a.extract_terminal().assert_true();
 
 		let (a, rem) = parser.parse("false").unwrap();
 		assert_eq!(rem, "");
-		a.assert_false();
+		a.extract_terminal().assert_false();
 	}
 
 	#[test]
