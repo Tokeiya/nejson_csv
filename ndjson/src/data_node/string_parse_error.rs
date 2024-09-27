@@ -6,6 +6,8 @@ pub enum StringParseError {
 	InvalidSurrogate { first: String, second: String },
 	#[error("{0} was invalid escape")]
 	InvalidEscape(String),
+	#[error("Unexpected end of file.")]
+	UnexpectedEof(),
 }
 
 impl StringParseError {
@@ -15,6 +17,10 @@ impl StringParseError {
 
 	pub fn invalid_escape(value: String) -> StringParseError {
 		StringParseError::InvalidEscape(value)
+	}
+
+	pub fn unexpected_eof() -> StringParseError {
+		StringParseError::UnexpectedEof()
 	}
 }
 
@@ -43,6 +49,12 @@ pub mod test_helper {
 				}
 				_ => panic!("Expected InvalidEscape, but got {:?}", self),
 			}
+		}
+
+		pub fn assert_unexpected_eof(&self) {
+			let StringParseError::UnexpectedEof() = self else {
+				unreachable!()
+			};
 		}
 	}
 }

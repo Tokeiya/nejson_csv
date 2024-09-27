@@ -25,53 +25,133 @@ impl StringTokenizer<'_> {
 	}
 
 	fn surrogate_pair<'a>(
+		&'a mut self,
 		mut iter: Iter<'a>,
-	) -> (Iter<'a>, Option<Result<&'a str, StringParseError>>) {
-		todo!()
-	}
+	) -> Option<Result<&'a str, StringParseError>> {
+		dbg!(self.0.len());
+		dbg!(self.0);
 
-	fn unicode<'a>(mut iter: Iter<'a>) -> (Iter<'a>, Option<Result<&'a str, StringParseError>>) {
-		todo!()
-	}
+		if self.0.len() < 12 {
+			self.0 = "";
+			return Some(Err(StringParseError::UnexpectedEof()));
+		};
 
-	fn escape<'a>(mut iter: Iter<'a>) -> (Iter<'a>, Option<Result<&'a str, StringParseError>>) {
-		let memo = iter.clone();
+		if let Ok(code) = u16::from_str_radix(&self.0[2..6], 16) {
+			if code >= 0xD800 && code <= 0xDBFF {
+				if let Ok(code) = u16::from_str_radix(&self.0[8..12], 16) {
+					if code >= 0xDC00 && code <= 0xDFFF {
+						let ret = Some(Ok(&self.0[0..12]));
+						self.0 = &self.0[12..];
+						ret
+					} else {
+						let ret = Some(Err(StringParseError::InvalidSurrogate {
+							first: self.0[..6].to_string(),
+							second: self.0[6..12].to_string(),
+						}));
 
-		if let Some((idx, chr)) = iter.next() {
-			if chr != '\\' {
-				unreachable!()
-			};
+						self.0 = &self.0[12..];
+						return ret;
+					}
+				} else {
+					let ret = Some(Err(StringParseError::InvalidSurrogate {
+						first: self.0[..6].to_string(),
+						second: self.0[6..12].to_string(),
+					}));
 
-			if let Some((idx, chr)) = iter.peek() {
-				if ESCAPE.contains(&chr) {}
+					self.0 = &self.0[12..];
+					return ret;
+				}
+			} else {
+				let ret = Some(Err(StringParseError::InvalidSurrogate {
+					first: self.0[..6].to_string(),
+					second: "".to_string(),
+				}));
+
+				self.0 = &self.0[6..];
+				return ret;
 			}
 		} else {
-			unreachable!()
-		}
+			let ret = Some(Err(StringParseError::InvalidSurrogate {
+				first: self.0[..6].to_string(),
+				second: self.0[6..12].to_string(),
+			}));
 
-		todo!()
+			self.0 = &self.0[12..];
+			return ret;
+		}
+	}
+
+	fn unicode<'a>(&'a mut self, mut iter: Iter<'a>) -> Option<Result<&'a str, StringParseError>> {
+		let (_, c) = iter.next().unwrap();
+
+		if c != 'u' {
+			unreachable!()
+		};
+
+		if self.0.len() < 6 {
+			self.0 = "";
+			Some(Err(StringParseError::UnexpectedEof()))
+		} else {
+			if let Ok(code) = u16::from_str_radix(&self.0[2..6], 16) {
+				if code >= 0xD800u16 && code <= 0xDFFF {
+					self.surrogate_pair(iter)
+				} else {
+					let ret = Some(Ok(&self.0[..6]));
+					self.0 = &self.0[6..];
+					ret
+				}
+			} else {
+				self.0 = &self.0[6..];
+
+				let ret = Some(Err(StringParseError::InvalidEscape(
+					self.0[..6].to_string(),
+				)));
+
+				ret
+			}
+		}
+	}
+
+	fn escape<'a>(&'a mut self, mut iter: Iter<'a>) -> Option<Result<&'a str, StringParseError>> {
+		let (i, c) = iter.next().unwrap();
+
+		if c != '\\' {
+			unreachable!()
+		};
+
+		if let Some((i, c)) = iter.peek() {
+			if ESCAPE.contains(c) {
+				let ret = Some(Ok(&self.0[..=*i]));
+				self.0 = &self.0[i + 1..];
+				ret
+			} else if c == &'u' {
+				self.unicode(iter)
+			} else {
+				let str = &self.0[..=*i];
+				let str = str.to_string();
+
+				let ret = Some(Err(StringParseError::InvalidEscape(str)));
+				self.0 = &self.0[i + 1..];
+				ret
+			}
+		} else {
+			let ret = Some(Err(StringParseError::UnexpectedEof()));
+			self.0 = "";
+			ret
+		}
 	}
 
 	pub fn next(&mut self) -> Option<Result<&str, StringParseError>> {
-		let mut chrs = self.0.char_indices().peekable();
+		let mut chars = self.0.char_indices().peekable();
 
-		let (idx, chr) = chrs.peek()?;
-		dbg!(self.0);
+		let (i, c) = chars.peek()?;
 
-		if chr == &'\\' {
-			let (mut iter, opt) = Self::escape(chrs);
-
-			if let Some((i, _)) = iter.peek() {
-				self.0 = &self.0[*i..];
-			} else {
-				self.0 = "";
-			}
-
-			return opt;
+		if *c == '\\' {
+			self.escape(chars)
 		} else {
-			let ret = &self.0[*idx..=*idx];
-			self.0 = &self.0[idx + 1..];
-			Some(Ok(ret))
+			let ret = Some(Ok(&self.0[*i..=*i]));
+			self.0 = &self.0[i + 1..];
+			ret
 		}
 	}
 }
@@ -87,10 +167,7 @@ mod test {
 	}
 
 	#[test]
-	fn next() {
-		let mut fixture = StringTokenizer::new("");
-		assert!(fixture.next().is_none());
-
+	fn next_normal() {
 		let mut fixture = StringTokenizer::new("hello");
 		assert_eq!(fixture.next().unwrap().unwrap(), "h");
 		assert_eq!(fixture.next().unwrap().unwrap(), "e");
@@ -98,8 +175,12 @@ mod test {
 		assert_eq!(fixture.next().unwrap().unwrap(), "l");
 		assert_eq!(fixture.next().unwrap().unwrap(), "o");
 		assert!(fixture.next().is_none());
+	}
 
-		let mut fixture = StringTokenizer::new(r#"\"\\\/\b\f\n\r\t\u0061"#);
+	#[test]
+	fn next_escape() {
+		let mut fixture = StringTokenizer::new(r#"\"\\\/\b\f\n\r\t"#);
+		assert_eq!(fixture.next().unwrap().unwrap(), r#"\""#);
 		assert_eq!(fixture.next().unwrap().unwrap(), r#"\\"#);
 		assert_eq!(fixture.next().unwrap().unwrap(), r#"\/"#);
 		assert_eq!(fixture.next().unwrap().unwrap(), r#"\b"#);
@@ -107,9 +188,23 @@ mod test {
 		assert_eq!(fixture.next().unwrap().unwrap(), r#"\n"#);
 		assert_eq!(fixture.next().unwrap().unwrap(), r#"\r"#);
 		assert_eq!(fixture.next().unwrap().unwrap(), r#"\t"#);
-		assert_eq!(fixture.next().unwrap().unwrap(), r#"\u0061"#);
 		assert!(fixture.next().is_none());
+	}
 
+	#[test]
+	fn next_unicode() {
+		let mut fixture = StringTokenizer::new(r#"\u0068\u0065\u006C\u006C\u006F"#);
+
+		assert_eq!(fixture.next().unwrap().unwrap(), r#"\u0068"#);
+		assert_eq!(fixture.next().unwrap().unwrap(), r#"\u0065"#);
+		assert_eq!(fixture.next().unwrap().unwrap(), r#"\u006C"#);
+		assert_eq!(fixture.next().unwrap().unwrap(), r#"\u006C"#);
+		assert_eq!(fixture.next().unwrap().unwrap(), r#"\u006F"#);
+		assert!(fixture.next().is_none());
+	}
+
+	#[test]
+	fn surrogate_pair_next() {
 		let mut fixture =
 			StringTokenizer::new(r#"\uD83D\uDE0A\uD83E\uDEE0\uD83D\uDE23\uD83D\uDE18"#);
 		assert_eq!(fixture.next().unwrap().unwrap(), r#"\uD83D\uDE0A"#);
@@ -121,6 +216,9 @@ mod test {
 
 	#[test]
 	fn invalid_next() {
+		let mut fixture = StringTokenizer::new(r#"\"#);
+		fixture.next().unwrap().unwrap_err().assert_unexpected_eof();
+
 		let mut fixture = StringTokenizer::new(r#"ab\cd"#);
 		assert_eq!(fixture.next().unwrap().unwrap(), "a");
 		assert_eq!(fixture.next().unwrap().unwrap(), "b");
