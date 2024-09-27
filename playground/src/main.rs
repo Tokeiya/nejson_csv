@@ -7,6 +7,7 @@ use std::io::{self, BufReader, Read, Write};
 use std::str::Chars;
 
 fn main() {
-	let a = "0123456";
-	println!("{}", &a[..1])
+	let str = "hello";
+	let s = &str[0..1];
+	println!("{s}")
 }

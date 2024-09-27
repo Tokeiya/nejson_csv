@@ -1,60 +1,77 @@
 use crate::data_node::string_parse_error::StringParseError;
-use std::str::Chars;
-
+use std::collections::HashSet;
+use std::iter::{IntoIterator, Iterator, Peekable};
+use std::str::{CharIndices, Chars};
+use std::sync::LazyLock;
+type Iter<'a> = Peekable<CharIndices<'a>>;
 pub struct StringTokenizer<'a>(&'a str);
 
+static ESCAPE: LazyLock<HashSet<char>> = LazyLock::new(|| {
+	let mut set = HashSet::new();
+	set.insert('"');
+	set.insert('\\');
+	set.insert('/');
+	set.insert('b');
+	set.insert('f');
+	set.insert('n');
+	set.insert('r');
+	set.insert('t');
+
+	set
+});
 impl StringTokenizer<'_> {
 	pub fn new(scr: &str) -> StringTokenizer<'_> {
 		StringTokenizer(scr)
 	}
 
-	fn cut(&mut self, idx: usize) -> Option<Result<&'_ str, StringParseError>> {
-		let ret = &self.0[..idx];
-		self.0 = &self.0[idx..];
-		Some(Ok(ret))
+	fn surrogate_pair<'a>(
+		mut iter: Iter<'a>,
+	) -> (Iter<'a>, Option<Result<&'a str, StringParseError>>) {
+		todo!()
 	}
-	
-	pub fn unicode(&mut self,mut chars:impl Iterator<Item=(usize,char)>)->Option<Result<&'_ str,StringParseError>>{
-		let mut cnt=0usize;
 
-		loop {
-			let piv=chars.next();
-			
-			if let None=piv{
-				let tmp=
+	fn unicode<'a>(mut iter: Iter<'a>) -> (Iter<'a>, Option<Result<&'a str, StringParseError>>) {
+		todo!()
+	}
+
+	fn escape<'a>(mut iter: Iter<'a>) -> (Iter<'a>, Option<Result<&'a str, StringParseError>>) {
+		let memo = iter.clone();
+
+		if let Some((idx, chr)) = iter.next() {
+			if chr != '\\' {
+				unreachable!()
+			};
+
+			if let Some((idx, chr)) = iter.peek() {
+				if ESCAPE.contains(&chr) {}
 			}
-			
+		} else {
+			unreachable!()
 		}
+
+		todo!()
 	}
 
 	pub fn next(&mut self) -> Option<Result<&str, StringParseError>> {
-		let mut chrs = self.0.chars().enumerate();
+		let mut chrs = self.0.char_indices().peekable();
 
-		if let Some((i, c)) = chrs.next() {
-			if c == '\\' {
-				if let Some((i, c)) = chrs.next() {
-					match c {
-						'"' => self.cut(i),
-						'\\' => self.cut(i),
-						'/' => self.cut(i),
-						'b' => self.cut(i),
-						'f' => self.cut(i),
-						'n' => self.cut(i),
-						'r' => self.cut(i),
-						't' => self.cut(i),
+		let (idx, chr) = chrs.peek()?;
+		dbg!(self.0);
 
-						_ => Some(Err(StringParseError::InvalidEscape(format!("\\{c}")))),
-					}
-				} else {
-					Some(Err(StringParseError::InvalidEscape("\\".to_string())))
-				}
+		if chr == &'\\' {
+			let (mut iter, opt) = Self::escape(chrs);
+
+			if let Some((i, _)) = iter.peek() {
+				self.0 = &self.0[*i..];
 			} else {
-				let ret = &self.0[..1];
-				self.0 = &self.0[1..];
-				Some(Ok(ret))
+				self.0 = "";
 			}
+
+			return opt;
 		} else {
-			None
+			let ret = &self.0[*idx..=*idx];
+			self.0 = &self.0[idx + 1..];
+			Some(Ok(ret))
 		}
 	}
 }
