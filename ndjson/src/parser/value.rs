@@ -2,7 +2,8 @@ use super::number::number;
 use super::{array::array, boolean::boolean, null::null, object::object, string::string};
 use crate::syntax_node::prelude::Node;
 use combine as cmb;
-use combine::{Parser, Stream};
+use combine::parser;
+use combine::{choice, Parser, Stream};
 pub fn ws<I: Stream<Token = char>>() -> impl Parser<I, Output = String> {
 	let space = cmb::satisfy::<I, _>(|c| match c {
 		'\u{20}' => true,
@@ -16,13 +17,7 @@ pub fn ws<I: Stream<Token = char>>() -> impl Parser<I, Output = String> {
 }
 
 fn value_<I: Stream<Token = char>>() -> impl Parser<I, Output = Node> {
-	let v = boolean::<I>()
-		.or(null())
-		.or(string())
-		.or(number())
-		.or(array())
-		.or(object());
-
+	let v = choice!(boolean(), null(), string(), number(), array(), object());
 	(ws(), v, ws()).map(|(l, v, t)| Node::new(v, l, t))
 }
 
