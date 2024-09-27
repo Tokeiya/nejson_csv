@@ -1,7 +1,7 @@
 use crate::data_node::string_parse_error::StringParseError;
 use std::collections::HashSet;
-use std::iter::{IntoIterator, Iterator, Peekable};
-use std::str::{CharIndices, Chars};
+use std::iter::{Iterator, Peekable};
+use std::str::CharIndices;
 use std::sync::LazyLock;
 type Iter<'a> = Peekable<CharIndices<'a>>;
 pub struct StringTokenizer<'a>(&'a str);
@@ -24,10 +24,7 @@ impl StringTokenizer<'_> {
 		StringTokenizer(scr)
 	}
 
-	fn surrogate_pair<'a>(
-		&'a mut self,
-		mut iter: Iter<'a>,
-	) -> Option<Result<&'a str, StringParseError>> {
+	fn surrogate_pair<'a>(&'a mut self) -> Option<Result<&'a str, StringParseError>> {
 		dbg!(self.0.len());
 		dbg!(self.0);
 
@@ -94,7 +91,7 @@ impl StringTokenizer<'_> {
 		} else {
 			if let Ok(code) = u16::from_str_radix(&self.0[2..6], 16) {
 				if code >= 0xD800u16 && code <= 0xDFFF {
-					self.surrogate_pair(iter)
+					self.surrogate_pair()
 				} else {
 					let ret = Some(Ok(&self.0[..6]));
 					self.0 = &self.0[6..];
@@ -113,7 +110,7 @@ impl StringTokenizer<'_> {
 	}
 
 	fn escape<'a>(&'a mut self, mut iter: Iter<'a>) -> Option<Result<&'a str, StringParseError>> {
-		let (i, c) = iter.next().unwrap();
+		let (_, c) = iter.next().unwrap();
 
 		if c != '\\' {
 			unreachable!()
