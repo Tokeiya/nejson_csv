@@ -1,3 +1,4 @@
+#[derive(Debug)]
 pub enum StringToken<'a> {
 	String(&'a str),
 	Char(char),
