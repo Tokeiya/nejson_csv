@@ -110,6 +110,8 @@ impl StringTokenizer<'_> {
 	}
 
 	fn escape<'a>(&'a mut self, mut iter: Iter<'a>) -> Option<Result<&'a str, StringParseError>> {
+		// unescaped = %x20-21 / %x23-5B / %x5D-10FFFF
+
 		let (_, c) = iter.next().unwrap();
 
 		if c != '\\' {
@@ -136,6 +138,10 @@ impl StringTokenizer<'_> {
 			self.0 = "";
 			ret
 		}
+	}
+	#[inline]
+	fn is_unescaped(c: char) -> bool {
+		todo!()
 	}
 
 	pub fn next(&mut self) -> Option<Result<&str, StringParseError>> {
