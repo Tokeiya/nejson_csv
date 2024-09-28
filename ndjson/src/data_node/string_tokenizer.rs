@@ -51,7 +51,7 @@ impl StringTokenizer<'_> {
 						}));
 
 						self.0 = &self.0[12..];
-						return ret;
+						ret
 					}
 				} else {
 					let ret = Some(Err(StringParseError::InvalidSurrogate {
@@ -60,7 +60,7 @@ impl StringTokenizer<'_> {
 					}));
 
 					self.0 = &self.0[12..];
-					return ret;
+					ret
 				}
 			} else {
 				let ret = Some(Err(StringParseError::InvalidSurrogate {
@@ -69,7 +69,7 @@ impl StringTokenizer<'_> {
 				}));
 
 				self.0 = &self.0[6..];
-				return ret;
+				ret
 			}
 		} else {
 			let ret = Some(Err(StringParseError::InvalidSurrogate {
@@ -78,7 +78,7 @@ impl StringTokenizer<'_> {
 			}));
 
 			self.0 = &self.0[12..];
-			return ret;
+			ret
 		}
 	}
 
@@ -158,7 +158,7 @@ impl StringTokenizer<'_> {
 	pub fn next(&mut self) -> Option<Result<StringToken, StringParseError>> {
 		let mut chars = self.0.char_indices().peekable();
 
-		let (i, c) = chars.peek()?;
+		let (_, c) = chars.peek()?;
 
 		if c == &'\\' {
 			self.escape(chars)
@@ -186,7 +186,6 @@ impl StringTokenizer<'_> {
 #[cfg(test)]
 mod test {
 	use super::*;
-	use crate::data_node::test_prelude::*;
 
 	#[test]
 	fn new() {
