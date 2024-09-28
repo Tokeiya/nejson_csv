@@ -40,7 +40,6 @@ pub mod test_helper {
 
 #[cfg(test)]
 mod tests {
-	use super::test_helper;
 	use super::*;
 	#[test]
 	fn test_string() {
