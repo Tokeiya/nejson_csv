@@ -222,9 +222,21 @@ mod test {
 		let arr = a.value().extract_array().value().extract_contents();
 
 		assert_eq!(arr.len(), 3);
-		arr[0].value().extract_terminal().assert_integer("1");
-		arr[1].value().extract_terminal().assert_integer("2");
-		arr[2].value().extract_terminal().assert_integer("3");
+		arr[0]
+			.value()
+			.value()
+			.extract_terminal()
+			.assert_integer("1");
+		arr[1]
+			.value()
+			.value()
+			.extract_terminal()
+			.assert_integer("2");
+		arr[2]
+			.value()
+			.value()
+			.extract_terminal()
+			.assert_integer("3");
 	}
 
 	#[test]

@@ -1,7 +1,7 @@
 use super::object_element::ObjectElement;
 use super::prelude::*;
 
-pub type ArrayNode = NonTerminalNode<Node>;
+pub type ArrayNode = NonTerminalNode<ArrayElement>;
 pub type ObjectNode = NonTerminalNode<ObjectElement>;
 
 pub enum NonTerminalNodeValue<T> {
@@ -13,8 +13,8 @@ pub struct NonTerminalNode<T> {
 	value: NonTerminalNodeValue<T>,
 }
 
-impl NonTerminalNode<Node> {
-	pub fn new(value: Vec<Node>) -> Self {
+impl NonTerminalNode<ArrayElement> {
+	pub fn new(value: Vec<ArrayElement>) -> Self {
 		Self {
 			value: NonTerminalNodeValue::Contents(value),
 		}
@@ -71,22 +71,30 @@ pub mod test_helper {
 #[cfg(test)]
 mod test {
 	use super::super::node_value::NodeValue;
+	use super::super::prelude::*;
 	use super::*;
 	use crate::syntax_node::test_prelude::*;
 
 	fn array_fixture() -> ArrayNode {
 		let arr = vec![
-			Node::new(
-				NodeValue::Terminal(TerminalNode::String("foo".to_string())),
-				ws(),
-				ws(),
+			ArrayElement::new(
+				0,
+				Node::new(
+					NodeValue::Terminal(TerminalNode::String("foo".to_string())),
+					ws(),
+					ws(),
+				),
 			),
-			Node::new(
-				NodeValue::Terminal(TerminalNode::Integer("42".to_string())),
-				ws(),
-				ws(),
+			ArrayElement::new(
+				1,
+				Node::new(
+					NodeValue::Terminal(TerminalNode::Integer("42".to_string())),
+					ws(),
+					ws(),
+				),
 			),
 		];
+
 		ArrayNode::new(arr)
 	}
 
@@ -96,13 +104,23 @@ mod test {
 
 		let contents = node.value().extract_contents();
 		assert_eq!(contents.len(), 2);
-		contents[0].value().extract_terminal().assert_string("foo");
-		contents[0].assert_trail(None);
-		contents[0].assert_lead(None);
+		contents[0]
+			.value()
+			.value()
+			.extract_terminal()
+			.assert_string("foo");
+		contents[0].value().assert_trail(None);
+		contents[0].value().assert_lead(None);
+		contents[0].assert_index(0);
 
-		contents[1].value().extract_terminal().assert_integer("42");
-		contents[1].assert_trail(None);
-		contents[1].assert_lead(None);
+		contents[1]
+			.value()
+			.value()
+			.extract_terminal()
+			.assert_integer("42");
+		contents[1].value().assert_trail(None);
+		contents[1].value().assert_lead(None);
+		contents[1].assert_index(1);
 
 		let node = ArrayNode::empty("space".to_string());
 		node.value.assert_empty("space");
@@ -165,11 +183,21 @@ mod test {
 		let array = node.value().extract_contents();
 		assert_eq!(array.len(), 2);
 
-		array[0].assert_lead_trail(None, None);
-		array[0].value().extract_terminal().assert_string("foo");
+		array[0].value().assert_lead_trail(None, None);
+		array[0]
+			.value()
+			.value()
+			.extract_terminal()
+			.assert_string("foo");
+		array[0].assert_index(0);
 
-		array[1].assert_lead_trail(None, None);
-		array[1].value().extract_terminal().assert_integer("42");
+		array[1].value().assert_lead_trail(None, None);
+		array[1]
+			.value()
+			.value()
+			.extract_terminal()
+			.assert_integer("42");
+		array[1].assert_index(1);
 
 		let node = ObjectNode::new(vec![
 			ObjectElement::new(

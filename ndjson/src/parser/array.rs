@@ -15,8 +15,12 @@ fn contents<I: Stream<Token = char>>() -> impl Parser<I, Output = NodeValue> {
 	let empty = ws::<I>().map(|s| NodeValue::Array(ArrayNode::empty(s)));
 
 	let content = (first::<I>(), following()).map(|(a, b)| {
-		let mut v = b;
-		v.insert(0, a);
+		let mut v = Vec::new();
+		v.push(ArrayElement::new(0, a));
+
+		for (i, n) in b.into_iter().enumerate() {
+			v.push(ArrayElement::new(i + 1, n));
+		}
 		NodeValue::Array(ArrayNode::new(v))
 	});
 
@@ -111,28 +115,37 @@ mod test {
 		assert_eq!(act.len(), 6);
 
 		let piv = &act[0];
-		piv.assert_lead_trail(None, None);
-		piv.value().extract_terminal().assert_string("rust");
+		piv.value().assert_lead_trail(None, None);
+		piv.value().value().extract_terminal().assert_string("rust");
+		piv.assert_index(0);
 
 		let piv = &act[1];
-		piv.assert_lead_trail(None, None);
-		piv.value().extract_terminal().assert_integer("42");
+		piv.value().assert_lead_trail(None, None);
+		piv.value().value().extract_terminal().assert_integer("42");
+		piv.assert_index(1);
 
 		let piv = &act[2];
-		piv.assert_lead_trail(None, None);
-		piv.value().extract_terminal().assert_null();
+		piv.value().assert_lead_trail(None, None);
+		piv.value().value().extract_terminal().assert_null();
+		piv.assert_index(2);
 
 		let piv = &act[3];
-		piv.assert_lead_trail(None, None);
-		piv.value().extract_terminal().assert_true();
+		piv.value().assert_lead_trail(None, None);
+		piv.value().value().extract_terminal().assert_true();
+		piv.assert_index(3);
 
 		let piv = &act[4];
-		piv.assert_lead_trail(None, None);
-		piv.value().extract_terminal().assert_false();
+		piv.value().assert_lead_trail(None, None);
+		piv.value().value().extract_terminal().assert_false();
+		piv.assert_index(4);
 
 		let piv = &act[5];
-		piv.assert_lead_trail(None, None);
-		piv.value().extract_terminal().assert_float("42.195");
+		piv.value().assert_lead_trail(None, None);
+		piv.value()
+			.value()
+			.extract_terminal()
+			.assert_float("42.195");
+		piv.assert_index(5);
 	}
 
 	#[test]
