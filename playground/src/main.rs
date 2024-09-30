@@ -1,16 +1,15 @@
+mod alt_node;
 mod node;
 
-use node::*;
-use std::cell::RefCell;
+use alt_node::*;
 
 fn main() {
-	let tn = NodeValue::terminal_new(42);
-	let tn = Node::new(tn, None);
+	let root = Node::new_nonterminal(None);
 
-	let root = NodeValue::nonterminal_new(vec![tn]);
-	let mut root = Node::new(root, None);
+	let child = Node::new_terminal(42, Some(&root));
+	root.add_child(child);
 
-	if let NodeValue::NonTerminal(v) = root.value() {
-		v[0].set_parent(Some(&root));
-	}
+	foo(root);
 }
+
+fn foo<'a>(root: Node<'a>) {}
