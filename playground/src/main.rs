@@ -6,4 +6,6 @@ use std::rc::Rc;
 use use_rc::*;
 pub struct Integer(pub i32);
 
-fn main() {}
+fn main() {
+	let a = Rc::new(10);
+}

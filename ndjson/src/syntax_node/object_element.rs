@@ -1,12 +1,13 @@
 use super::prelude::*;
+use std::rc::Rc;
 
 pub struct ObjectElement {
-	key: Node,
-	value: Node,
+	key: Rc<Node>,
+	value: Rc<Node>,
 }
 
 impl ObjectElement {
-	pub fn new(key: Node, value: Node) -> Self {
+	pub fn new(key: Rc<Node>, value: Rc<Node>) -> Self {
 		ObjectElement { key, value }
 	}
 	pub fn key(&self) -> &Node {

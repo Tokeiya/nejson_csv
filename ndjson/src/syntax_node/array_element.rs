@@ -1,11 +1,12 @@
 use super::prelude::*;
+use std::rc::Rc;
 pub struct ArrayElement {
 	index: usize,
-	value: Node,
+	value: Rc<Node>,
 }
 
 impl ArrayElement {
-	pub fn new(index: usize, value: Node) -> ArrayElement {
+	pub fn new(index: usize, value: Rc<Node>) -> ArrayElement {
 		ArrayElement { index, value }
 	}
 

@@ -1,14 +1,15 @@
 use super::value::{value, ws};
 use crate::syntax_node::prelude::*;
 use combine::{self as cmb, parser::char as chr, Parser, Stream};
+use std::rc::Rc;
 
-fn first<I: Stream<Token = char>>() -> impl Parser<I, Output = Node> {
+fn first<I: Stream<Token = char>>() -> impl Parser<I, Output = Rc<Node>> {
 	value::<I>()
 }
 
-fn following<I: Stream<Token = char>>() -> impl Parser<I, Output = Vec<Node>> {
+fn following<I: Stream<Token = char>>() -> impl Parser<I, Output = Vec<Rc<Node>>> {
 	let tmp = (chr::char(','), value::<I>()).map(|(_, v)| v);
-	cmb::many::<Vec<Node>, I, _>(tmp)
+	cmb::many::<Vec<Rc<Node>>, I, _>(tmp)
 }
 
 fn contents<I: Stream<Token = char>>() -> impl Parser<I, Output = NodeValue> {

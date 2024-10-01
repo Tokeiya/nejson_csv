@@ -2,7 +2,8 @@ use super::number::number;
 use super::{array::array, boolean::boolean, null::null, object::object, string::string};
 use crate::syntax_node::prelude::Node;
 use combine as cmb;
-use combine::{choice, Parser, Stream};
+use combine::{choice, parser, Parser, Stream};
+use std::rc::Rc;
 pub fn ws<I: Stream<Token = char>>() -> impl Parser<I, Output = String> {
 	let space = cmb::satisfy::<I, _>(|c| match c {
 		'\u{20}' => true,
@@ -15,124 +16,17 @@ pub fn ws<I: Stream<Token = char>>() -> impl Parser<I, Output = String> {
 	cmb::many::<String, I, _>(space)
 }
 
-fn value_<I: Stream<Token = char>>() -> impl Parser<I, Output = Node> {
+fn value_<I: Stream<Token = char>>() -> impl Parser<I, Output = Rc<Node>> {
 	let v = choice!(boolean(), null(), string(), number(), array(), object());
 	(ws(), v, ws()).map(|(l, v, t)| Node::new(v, l, t))
 }
 
-#[allow(non_camel_case_types)]
-#[doc(hidden)]
-pub struct value<I>
-where
-	<I as ::combine::stream::StreamOnce>::Error: ::combine::error::ParseError<
-		<I as ::combine::stream::StreamOnce>::Token,
-		<I as ::combine::stream::StreamOnce>::Range,
-		<I as ::combine::stream::StreamOnce>::Position,
-	>,
-	I: ::combine::stream::Stream,
-	I: Stream<Token = char>,
-{
-	__marker: ::combine::lib::marker::PhantomData<fn(I) -> Node>,
-}
-#[allow(non_shorthand_field_patterns)]
-impl<I> ::combine::Parser<I> for value<I>
-where
-	<I as ::combine::stream::StreamOnce>::Error: ::combine::error::ParseError<
-		<I as ::combine::stream::StreamOnce>::Token,
-		<I as ::combine::stream::StreamOnce>::Range,
-		<I as ::combine::stream::StreamOnce>::Position,
-	>,
-	I: ::combine::stream::Stream,
-	I: Stream<Token = char>,
-{
-	type Output = Node;
-	type PartialState = ();
-	#[inline]
-	fn parse_partial(
-		&mut self,
-		input: &mut I,
-		state: &mut Self::PartialState,
-	) -> ::combine::error::ParseResult<Self::Output, <I as ::combine::StreamOnce>::Error> {
-		self.parse_mode(::combine::parser::PartialMode::default(), input, state)
-	}
-	#[inline]
-	fn parse_first(
-		&mut self,
-		input: &mut I,
-		state: &mut Self::PartialState,
-	) -> ::combine::error::ParseResult<Self::Output, <I as ::combine::StreamOnce>::Error> {
-		self.parse_mode(::combine::parser::FirstMode, input, state)
-	}
-	#[inline]
-	fn parse_mode_impl<M>(
-		&mut self,
-		mode: M,
-		input: &mut I,
-		state: &mut Self::PartialState,
-	) -> ::combine::error::ParseResult<Node, <I as ::combine::stream::StreamOnce>::Error>
-	where
-		M: ::combine::parser::ParseMode,
-	{
-		let value { .. } = *self;
-		{
-			let _ = state;
-			let mut state = Default::default();
-			let state = &mut state;
-			{ value_() }.parse_mode(mode, input, state)
-		}
-	}
-	#[inline]
-	fn add_error(
-		&mut self,
-		errors: &mut ::combine::error::Tracked<<I as ::combine::stream::StreamOnce>::Error>,
-	) {
-		let value { .. } = *self;
-		let mut parser = { value_() };
-		{
-			let _: &mut dyn ::combine::Parser<I, Output = Node, PartialState = _> = &mut parser;
-		}
-		parser.add_error(errors)
-	}
-	fn add_committed_expected_error(
-		&mut self,
-		errors: &mut ::combine::error::Tracked<<I as ::combine::stream::StreamOnce>::Error>,
-	) {
-		let value { .. } = *self;
-		let mut parser = { value_() };
-		{
-			let _: &mut dyn ::combine::Parser<I, Output = Node, PartialState = _> = &mut parser;
-		}
-		parser.add_committed_expected_error(errors)
+parser! {
+	pub fn value[I]()(I)->Rc<Node>
+	where [I:Stream<Token=char>]{
+		value_()
 	}
 }
-#[inline]
-pub fn value<I>() -> value<I>
-where
-	<I as ::combine::stream::StreamOnce>::Error: ::combine::error::ParseError<
-		<I as ::combine::stream::StreamOnce>::Token,
-		<I as ::combine::stream::StreamOnce>::Range,
-		<I as ::combine::stream::StreamOnce>::Position,
-	>,
-	I: ::combine::stream::Stream,
-	I: Stream<Token = char>,
-{
-	value {
-		__marker: ::combine::lib::marker::PhantomData,
-	}
-}
-
-// pub mod macro_expand {
-// 	use crate::parser::value::value_;
-// 	use crate::syntax_node::prelude::Node;
-// 	use combine::parser;
-//
-// 	parser! {
-// 		pub fn value[I]()(I)->Node
-// 		where [I:Stream<Token=char>]{
-// 			value_()
-// 		}
-// 	}
-// }
 #[cfg(test)]
 mod test {
 	use super::*;

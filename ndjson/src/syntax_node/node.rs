@@ -4,13 +4,27 @@ use std::rc::{Rc, Weak};
 
 pub struct Node {
 	value: NodeValue,
+	parent: RefCell<Weak<Node>>,
 	lead: String,
 	trail: String,
 }
 
 impl Node {
-	pub fn new(value: NodeValue, lead: String, trail: String) -> Self {
-		Self { value, lead, trail }
+	pub fn new(value: NodeValue, lead: String, trail: String) -> Rc<Self> {
+		Rc::new(Self {
+			value,
+			parent: RefCell::new(Weak::default()),
+			lead,
+			trail,
+		})
+	}
+
+	pub fn parent(&self) -> Option<Rc<Node>> {
+		todo!()
+	}
+
+	pub fn set_parent(&self, parent: Option<Rc<Node>>) {
+		todo!()
 	}
 
 	pub fn value(&self) -> &NodeValue {
