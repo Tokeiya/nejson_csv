@@ -2,7 +2,6 @@ use super::number::number;
 use super::{array::array, boolean::boolean, null::null, object::object, string::string};
 use crate::syntax_node::prelude::Node;
 use combine as cmb;
-use combine::parser;
 use combine::{choice, Parser, Stream};
 pub fn ws<I: Stream<Token = char>>() -> impl Parser<I, Output = String> {
 	let space = cmb::satisfy::<I, _>(|c| match c {

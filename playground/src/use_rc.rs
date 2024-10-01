@@ -19,17 +19,17 @@ impl Node {
 		})
 	}
 
-	pub fn new_nonterminal(children: Vec<Rc<Node>>) -> Rc<Self> {
-		let ret = Rc::new(Self {
-			value: Value::NonTerminal(children),
+	pub fn new_nonterminal(children: impl IntoIterator<Item = Rc<Node>>) -> Rc<Self> {
+		let mut ret = Rc::new(Node {
+			value: Value::NonTerminal(children.into_iter().collect()),
 			parent: RefCell::new(Weak::default()),
 		});
 
-		let Value::NonTerminal(vec) = ret.value() else {
+		let Value::NonTerminal(v) = &ret.value else {
 			unreachable!()
 		};
 
-		for elem in vec.iter() {
+		for elem in v.iter() {
 			elem.set_parent(ret.clone());
 		}
 
@@ -48,4 +48,9 @@ impl Node {
 	pub fn value(&self) -> &Value {
 		&self.value
 	}
+}
+
+pub fn usage() {
+	let children = vec![Node::new_terminal(42), Node::new_terminal(43)];
+	let root = Node::new_nonterminal(children);
 }
