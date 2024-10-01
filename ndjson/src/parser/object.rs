@@ -74,7 +74,7 @@ mod test {
 		let obj = a.extract_object().value().extract_contents();
 		assert_eq!(obj.len(), 1);
 
-		obj[0].key().value().extract_terminal().assert_string("foo");
+		obj[0].assert_key("foo");
 		obj[0]
 			.value()
 			.value()
@@ -90,11 +90,11 @@ mod test {
 		assert_eq!(a.len(), 2);
 
 		let piv = &a[0];
-		piv.key().value().extract_terminal().assert_string("key1");
+		piv.assert_key("key1");
 		piv.value().value().extract_terminal().assert_integer("1");
 
 		let piv = &a[1];
-		piv.key().value().extract_terminal().assert_string("key2");
+		piv.assert_key("key2");
 		piv.value().value().extract_terminal().assert_true();
 	}
 
@@ -116,7 +116,7 @@ mod test {
 		assert_eq!(a.len(), 1);
 
 		let piv = &a[0];
-		piv.key().value().extract_terminal().assert_string("key");
+		piv.assert_key("key");
 		piv.value().value().extract_terminal().assert_null();
 
 		let (a, r) = parser.parse(r#""key":null,"t":true,"f":false"#).unwrap();
@@ -125,15 +125,15 @@ mod test {
 		assert_eq!(a.len(), 3);
 
 		let piv = &a[0];
-		piv.key().value().extract_terminal().assert_string("key");
+		piv.assert_key("key");
 		piv.value().value().extract_terminal().assert_null();
 
 		let piv = &a[1];
-		piv.key().value().extract_terminal().assert_string("t");
+		piv.assert_key("t");
 		piv.value().value().extract_terminal().assert_true();
 
 		let piv = &a[2];
-		piv.key().value().extract_terminal().assert_string("f");
+		piv.assert_key("f");
 		piv.value().value().extract_terminal().assert_false();
 	}
 
@@ -154,43 +154,37 @@ mod test {
 		assert_eq!(contents.len(), 6);
 
 		let piv = &contents[0];
-		piv.key().value().extract_terminal().assert_string("int");
+		piv.assert_key("int");
 		piv.value().value().extract_terminal().assert_integer("1");
 		piv.value().assert_lead_trail(None, None);
-		piv.key().assert_lead_trail(None, None);
 
 		let piv = &contents[1];
-		piv.key().value().extract_terminal().assert_string("float");
+		piv.assert_key("float");
 		piv.value().value().extract_terminal().assert_float("1.0");
 		piv.value().assert_lead_trail(None, None);
-		piv.key().assert_lead_trail(None, None);
 
 		let piv = &contents[2];
-		piv.key().value().extract_terminal().assert_string("string");
+		piv.assert_key("string");
 		piv.value()
 			.value()
 			.extract_terminal()
 			.assert_string("string");
 		piv.value().assert_lead_trail(None, None);
-		piv.key().assert_lead_trail(None, None);
 
 		let piv = &contents[3];
-		piv.key().value().extract_terminal().assert_string("null");
+		piv.assert_key("null");
 		piv.value().value().extract_terminal().assert_null();
 		piv.value().assert_lead_trail(None, None);
-		piv.key().assert_lead_trail(None, None);
 
 		let piv = &contents[4];
-		piv.key().value().extract_terminal().assert_string("true");
+		piv.assert_key("true");
 		piv.value().value().extract_terminal().assert_true();
 		piv.value().assert_lead_trail(None, None);
-		piv.key().assert_lead_trail(None, None);
 
 		let piv = &contents[5];
-		piv.key().value().extract_terminal().assert_string("false");
+		piv.assert_key("false");
 		piv.value().value().extract_terminal().assert_false();
 		piv.value().assert_lead_trail(None, None);
-		piv.key().assert_lead_trail(None, None);
 	}
 
 	#[test]
@@ -198,12 +192,12 @@ mod test {
 		let mut parser = super::element::<&str>();
 		let (a, r) = parser.parse(r#""key":true"#).unwrap();
 		assert_eq!(r, "");
-		a.key().value().extract_terminal().assert_string("key");
+		a.assert_key("key");
 		a.value().value().extract_terminal().assert_true();
 
 		let (a, r) = parser.parse(r#"   "key"    :    true   "#).unwrap();
 		assert_eq!(r, "");
-		a.key().value().extract_terminal().assert_string("key");
+		a.assert_key("key");
 		a.value().value().extract_terminal().assert_true();
 
 		assert!(parser.parse("40:40").is_err())

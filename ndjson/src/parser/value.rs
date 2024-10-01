@@ -161,21 +161,21 @@ mod test {
 		let obj = a.value().extract_object().value().extract_contents();
 
 		assert_eq!(obj.len(), 3);
-		obj[0].key().value().extract_terminal().assert_string("a");
+		obj[0].assert_key("a");
 		obj[0]
 			.value()
 			.value()
 			.extract_terminal()
 			.assert_integer("1");
 
-		obj[1].key().value().extract_terminal().assert_string("b");
+		obj[1].assert_key("b");
 		obj[1]
 			.value()
 			.value()
 			.extract_terminal()
 			.assert_integer("2");
 
-		obj[2].key().value().extract_terminal().assert_string("c");
+		obj[2].assert_key("c");
 		obj[2]
 			.value()
 			.value()
@@ -204,7 +204,7 @@ mod test {
 			.extract_contents();
 		assert_eq!(inner.len(), 1);
 
-		inner[0].key().value().extract_terminal().assert_string("o");
+		inner[0].assert_key("o");
 
 		inner[0]
 			.value()

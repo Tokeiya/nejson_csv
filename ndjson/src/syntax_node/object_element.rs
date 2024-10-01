@@ -1,16 +1,27 @@
+use super::object_identity::ObjectIdentity;
 use super::prelude::*;
 use std::rc::Rc;
 
 pub struct ObjectElement {
-	key: Rc<Node>,
+	key: ObjectIdentity,
 	value: Rc<Node>,
 }
 
 impl ObjectElement {
 	pub fn new(key: Rc<Node>, value: Rc<Node>) -> Self {
-		ObjectElement { key, value }
+		let NodeValue::Terminal(key) = key.value() else {
+			unreachable!()
+		};
+
+		let TerminalNode::String(key) = key else {
+			unreachable!()
+		};
+
+		let key = ObjectIdentity::from(key.as_str());
+
+		Self { key, value }
 	}
-	pub fn key(&self) -> &Node {
+	pub fn key(&self) -> &ObjectIdentity {
 		&self.key
 	}
 	pub fn value(&self) -> &Node {
@@ -24,13 +35,12 @@ pub mod test_helper {
 
 	impl ObjectElement {
 		pub fn assert_key(&self, value: &str) {
-			let key = &self.key;
-			key.assert_lead_trail(None, None);
-			key.value().extract_terminal().assert_string(value);
+			(&self.key).assert_raw(value);
+			(&self.key).assert_escaped(value);
 
-			let key = &self.key();
-			key.value().extract_terminal().assert_string(value);
-			key.assert_lead_trail(None, None);
+			let key = self.key();
+			key.assert_raw(value);
+			key.assert_escaped(value);
 		}
 	}
 }

@@ -1,4 +1,4 @@
-use crate::data_node::{StringParseError, StringToken, StringTokenizer};
+use crate::data_node::{StringToken, StringTokenizer};
 
 pub struct ObjectIdentity {
 	raw: String,
@@ -79,7 +79,6 @@ pub mod test_helper {
 
 #[cfg(test)]
 mod test {
-	use super::test_helper;
 	use super::*;
 
 	#[test]
