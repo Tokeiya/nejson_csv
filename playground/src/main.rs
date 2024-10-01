@@ -7,5 +7,7 @@ use use_rc::*;
 pub struct Integer(pub i32);
 
 fn main() {
-	let a = Rc::new(10);
+	let str = "こんにちは世界".to_string();
+
+	println!("{str}");
 }
