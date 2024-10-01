@@ -1,4 +1,4 @@
-use crate::data_node::{StringParseError, StringTokenizer};
+use crate::data_node::{StringParseError, StringToken, StringTokenizer};
 
 pub struct ObjectIdentity {
 	raw: String,
@@ -8,17 +8,51 @@ pub struct ObjectIdentity {
 impl From<&str> for ObjectIdentity {
 	fn from(value: &str) -> Self {
 		let raw = value.to_string();
-		let mut tokenizer = StringTokenizer::new(&raw);
+
+		if value == "" {
+			Self { raw, escaped: None }
+		} else {
+			let mut tokenizer = StringTokenizer::new(&raw);
+			let mut escaped = String::new();
+
+			loop {
+				if let Some(token) = tokenizer.next() {
+					match token {
+						Ok(t) => match t {
+							StringToken::String(s) => escaped.push_str(&s),
+							StringToken::Char(c) => escaped.push(c),
+						},
+						Err(e) => {
+							escaped.push_str(&e.to_string());
+						}
+					}
+				} else {
+					break;
+				}
+			}
+
+			if &escaped == value {
+				Self { raw, escaped: None }
+			} else {
+				Self {
+					raw,
+					escaped: Some(escaped),
+				}
+			}
+		}
 	}
 }
 
 impl ObjectIdentity {
 	pub fn raw(&self) -> &str {
-		todo!()
+		&self.raw
 	}
 
 	pub fn escaped(&self) -> &str {
-		todo!()
+		match &self.escaped {
+			Some(escaped) => escaped,
+			None => self.raw.as_str(),
+		}
 	}
 }
 
@@ -34,7 +68,11 @@ pub mod test_helper {
 
 		pub fn assert_escaped(&self, expected: &str) {
 			assert_eq!(self.escaped(), expected);
-			assert_eq!(&self.escaped, expected);
+
+			match &self.escaped {
+				None => self.assert_raw(expected),
+				Some(actual) => assert_eq!(actual, expected),
+			}
 		}
 	}
 }
