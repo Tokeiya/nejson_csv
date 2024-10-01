@@ -8,6 +8,8 @@ pub enum StringParseError {
 	InvalidEscape(String),
 	#[error("Unexpected end of file.")]
 	UnexpectedEof(),
+	#[error("{0} is invalid unescaped character")]
+	InvalidUnescaped(char),
 }
 
 impl StringParseError {
@@ -21,6 +23,10 @@ impl StringParseError {
 
 	pub fn unexpected_eof() -> StringParseError {
 		StringParseError::UnexpectedEof()
+	}
+
+	pub fn invalid_unescaped(c: char) -> StringParseError {
+		StringParseError::InvalidUnescaped(c)
 	}
 }
 
@@ -55,6 +61,12 @@ pub mod test_helper {
 			let StringParseError::UnexpectedEof() = self else {
 				unreachable!()
 			};
+		}
+
+		pub fn assert_invalid_unescaped(&self, expected: char) {
+			if let StringParseError::InvalidUnescaped(act) = self {
+				assert_eq!(act, &expected);
+			}
 		}
 	}
 }
