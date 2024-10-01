@@ -156,12 +156,10 @@ mod test {
 		let piv = &contents[0];
 		piv.assert_key("int");
 		piv.value().value().extract_terminal().assert_integer("1");
-		piv.value().assert_lead_trail(None, None);
 
 		let piv = &contents[1];
 		piv.assert_key("float");
 		piv.value().value().extract_terminal().assert_float("1.0");
-		piv.value().assert_lead_trail(None, None);
 
 		let piv = &contents[2];
 		piv.assert_key("string");
@@ -169,22 +167,18 @@ mod test {
 			.value()
 			.extract_terminal()
 			.assert_string("string");
-		piv.value().assert_lead_trail(None, None);
 
 		let piv = &contents[3];
 		piv.assert_key("null");
 		piv.value().value().extract_terminal().assert_null();
-		piv.value().assert_lead_trail(None, None);
 
 		let piv = &contents[4];
 		piv.assert_key("true");
 		piv.value().value().extract_terminal().assert_true();
-		piv.value().assert_lead_trail(None, None);
 
 		let piv = &contents[5];
 		piv.assert_key("false");
 		piv.value().value().extract_terminal().assert_false();
-		piv.value().assert_lead_trail(None, None);
 	}
 
 	#[test]

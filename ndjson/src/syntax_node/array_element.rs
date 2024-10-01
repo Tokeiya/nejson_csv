@@ -38,7 +38,7 @@ mod test {
 	fn new() {
 		let tmp = TerminalNode::Null();
 		let tmp = NodeValue::Terminal(tmp);
-		let tmp = Node::new(tmp, "".to_string(), "".to_string());
+		let tmp = Node::new(tmp);
 		let fixture = ArrayElement::new(42, tmp);
 
 		assert_eq!(fixture.index, 42);
@@ -49,7 +49,7 @@ mod test {
 	fn index() {
 		let tmp = TerminalNode::Null();
 		let tmp = NodeValue::Terminal(tmp);
-		let tmp = Node::new(tmp, "".to_string(), "".to_string());
+		let tmp = Node::new(tmp);
 
 		let fixture = ArrayElement::new(42, tmp);
 		fixture.assert_index(42);
@@ -59,7 +59,7 @@ mod test {
 	fn value() {
 		let tmp = TerminalNode::Null();
 		let tmp = NodeValue::Terminal(tmp);
-		let tmp = Node::new(tmp, "".to_string(), "".to_string());
+		let tmp = Node::new(tmp);
 
 		let fixture = ArrayElement::new(42, tmp);
 		fixture.value().value().extract_terminal().assert_null()

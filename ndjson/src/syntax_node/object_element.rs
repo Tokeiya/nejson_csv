@@ -48,22 +48,13 @@ pub mod test_helper {
 #[cfg(test)]
 mod test {
 	use super::*;
-	use crate::syntax_node::test_prelude::ws;
 
 	#[test]
 	fn new() {
-		let key = Node::new(
-			NodeValue::Terminal(TerminalNode::String("key".to_string())),
-			ws(),
-			ws(),
-		);
-		let value = Node::new(
-			NodeValue::Terminal(TerminalNode::String("value".to_string())),
-			ws(),
-			ws(),
-		);
-
-		value.assert_lead_trail(None, None);
+		let key = Node::new(NodeValue::Terminal(TerminalNode::String("key".to_string())));
+		let value = Node::new(NodeValue::Terminal(TerminalNode::String(
+			"value".to_string(),
+		)));
 
 		let object_element = ObjectElement::new(key, value);
 		object_element.assert_key("key");

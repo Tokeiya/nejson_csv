@@ -72,25 +72,16 @@ pub mod test_helper {
 mod test {
 	use super::super::node_value::NodeValue;
 	use super::*;
-	use crate::syntax_node::test_prelude::*;
 
 	fn array_fixture() -> ArrayNode {
 		let arr = vec![
 			ArrayElement::new(
 				0,
-				Node::new(
-					NodeValue::Terminal(TerminalNode::String("foo".to_string())),
-					ws(),
-					ws(),
-				),
+				Node::new(NodeValue::Terminal(TerminalNode::String("foo".to_string()))),
 			),
 			ArrayElement::new(
 				1,
-				Node::new(
-					NodeValue::Terminal(TerminalNode::Integer("42".to_string())),
-					ws(),
-					ws(),
-				),
+				Node::new(NodeValue::Terminal(TerminalNode::Integer("42".to_string()))),
 			),
 		];
 
@@ -108,8 +99,6 @@ mod test {
 			.value()
 			.extract_terminal()
 			.assert_string("foo");
-		contents[0].value().assert_trail(None);
-		contents[0].value().assert_lead(None);
 		contents[0].assert_index(0);
 
 		contents[1]
@@ -117,8 +106,6 @@ mod test {
 			.value()
 			.extract_terminal()
 			.assert_integer("42");
-		contents[1].value().assert_trail(None);
-		contents[1].value().assert_lead(None);
 		contents[1].assert_index(1);
 
 		let node = ArrayNode::empty("space".to_string());
@@ -129,28 +116,14 @@ mod test {
 	fn object_new() {
 		let node = ObjectNode::new(vec![
 			ObjectElement::new(
-				Node::new(
-					NodeValue::Terminal(TerminalNode::String("foo".to_string())),
-					ws(),
-					ws(),
-				),
-				Node::new(
-					NodeValue::Terminal(TerminalNode::Integer("42".to_string())),
-					ws(),
-					ws(),
-				),
+				Node::new(NodeValue::Terminal(TerminalNode::String("foo".to_string()))),
+				Node::new(NodeValue::Terminal(TerminalNode::Integer("42".to_string()))),
 			),
 			ObjectElement::new(
-				Node::new(
-					NodeValue::Terminal(TerminalNode::String("bar".to_string())),
-					ws(),
-					ws(),
-				),
-				Node::new(
-					NodeValue::Terminal(TerminalNode::Float("42.195".to_string())),
-					ws(),
-					ws(),
-				),
+				Node::new(NodeValue::Terminal(TerminalNode::String("bar".to_string()))),
+				Node::new(NodeValue::Terminal(TerminalNode::Float(
+					"42.195".to_string(),
+				))),
 			),
 		]);
 
@@ -182,7 +155,6 @@ mod test {
 		let array = node.value().extract_contents();
 		assert_eq!(array.len(), 2);
 
-		array[0].value().assert_lead_trail(None, None);
 		array[0]
 			.value()
 			.value()
@@ -190,7 +162,6 @@ mod test {
 			.assert_string("foo");
 		array[0].assert_index(0);
 
-		array[1].value().assert_lead_trail(None, None);
 		array[1]
 			.value()
 			.value()
@@ -200,35 +171,20 @@ mod test {
 
 		let node = ObjectNode::new(vec![
 			ObjectElement::new(
-				Node::new(
-					NodeValue::Terminal(TerminalNode::String("foo".to_string())),
-					ws(),
-					ws(),
-				),
-				Node::new(
-					NodeValue::Terminal(TerminalNode::Integer("42".to_string())),
-					ws(),
-					ws(),
-				),
+				Node::new(NodeValue::Terminal(TerminalNode::String("foo".to_string()))),
+				Node::new(NodeValue::Terminal(TerminalNode::Integer("42".to_string()))),
 			),
 			ObjectElement::new(
-				Node::new(
-					NodeValue::Terminal(TerminalNode::String("bar".to_string())),
-					ws(),
-					ws(),
-				),
-				Node::new(
-					NodeValue::Terminal(TerminalNode::Float("42.195".to_string())),
-					ws(),
-					ws(),
-				),
+				Node::new(NodeValue::Terminal(TerminalNode::String("bar".to_string()))),
+				Node::new(NodeValue::Terminal(TerminalNode::Float(
+					"42.195".to_string(),
+				))),
 			),
 		]);
 
 		let object = node.value().extract_contents();
 		assert_eq!(object.len(), 2);
 
-		object[0].value().assert_lead_trail(None, None);
 		object[0].assert_key("foo");
 		object[0]
 			.value()
@@ -236,7 +192,6 @@ mod test {
 			.extract_terminal()
 			.assert_integer("42");
 
-		object[1].value().assert_lead_trail(None, None);
 		object[1].assert_key("bar");
 		object[1]
 			.value()

@@ -116,32 +116,26 @@ mod test {
 		assert_eq!(act.len(), 6);
 
 		let piv = &act[0];
-		piv.value().assert_lead_trail(None, None);
 		piv.value().value().extract_terminal().assert_string("rust");
 		piv.assert_index(0);
 
 		let piv = &act[1];
-		piv.value().assert_lead_trail(None, None);
 		piv.value().value().extract_terminal().assert_integer("42");
 		piv.assert_index(1);
 
 		let piv = &act[2];
-		piv.value().assert_lead_trail(None, None);
 		piv.value().value().extract_terminal().assert_null();
 		piv.assert_index(2);
 
 		let piv = &act[3];
-		piv.value().assert_lead_trail(None, None);
 		piv.value().value().extract_terminal().assert_true();
 		piv.assert_index(3);
 
 		let piv = &act[4];
-		piv.value().assert_lead_trail(None, None);
 		piv.value().value().extract_terminal().assert_false();
 		piv.assert_index(4);
 
 		let piv = &act[5];
-		piv.value().assert_lead_trail(None, None);
 		piv.value()
 			.value()
 			.extract_terminal()

@@ -18,8 +18,8 @@ pub fn ws<I: Stream<Token = char>>() -> impl Parser<I, Output = String> {
 
 fn value_<I: Stream<Token = char>>() -> impl Parser<I, Output = Rc<Node>> {
 	let v = choice!(boolean(), null(), string(), number(), array(), object());
-	(ws(), v, ws()).map(|(l, v, t)| {
-		let root = Node::new(v, l, t);
+	(ws(), v, ws()).map(|(_, v, _)| {
+		let root = Node::new(v);
 
 		if let NodeValue::Array(arr) = root.value() {
 			if let NonTerminalNodeValue::Contents(arr) = arr.value() {
@@ -60,7 +60,6 @@ mod test {
 		let mut parser = super::value::<&str>();
 		let (a, rem) = parser.parse(&str).unwrap();
 		assert_eq!(rem, "");
-		a.assert_lead_trail(None, None);
 		a.value().extract_terminal().assert_string("rust");
 	}
 
@@ -70,7 +69,6 @@ mod test {
 		let mut parser = super::value::<&str>();
 		let (a, rem) = parser.parse(&str).unwrap();
 		assert_eq!(rem, "");
-		a.assert_lead_trail(None, None);
 		a.value().extract_terminal().assert_integer("42");
 	}
 
@@ -80,14 +78,12 @@ mod test {
 		let mut parser = super::value::<&str>();
 		let (a, rem) = parser.parse(&str).unwrap();
 		assert_eq!(rem, "");
-		a.assert_lead_trail(None, None);
 		a.value().extract_terminal().assert_float("42.195");
 
 		let str = add_ws("42.1955e-1");
 		let mut parser = super::value::<&str>();
 		let (a, rem) = parser.parse(&str).unwrap();
 		assert_eq!(rem, "");
-		a.assert_lead_trail(None, None);
 		a.value().extract_terminal().assert_float("42.1955e-1");
 	}
 
@@ -97,14 +93,13 @@ mod test {
 		let mut parser = super::value::<&str>();
 		let (a, rem) = parser.parse(&str).unwrap();
 		assert_eq!(rem, "");
-		a.assert_lead_trail(None, None);
 		a.value().extract_terminal().assert_true();
 
 		let str = add_ws("false");
 		let mut parser = super::value::<&str>();
 		let (a, rem) = parser.parse(&str).unwrap();
 		assert_eq!(rem, "");
-		a.assert_lead_trail(None, None);
+		a.value().extract_terminal().assert_false();
 	}
 
 	#[test]
@@ -113,7 +108,6 @@ mod test {
 		let mut parser = super::value::<&str>();
 		let (a, rem) = parser.parse(&str).unwrap();
 		assert_eq!(rem, "");
-		a.assert_lead_trail(None, None);
 		a.value().extract_terminal().assert_null();
 	}
 
@@ -130,7 +124,6 @@ mod test {
 		let mut parser = super::value::<&str>(); //::<&str>();
 		let (a, rem) = parser.parse(&str).unwrap();
 		assert_eq!(rem, "");
-		a.assert_lead_trail(None, None);
 		let arr = a.value().extract_array().value().extract_contents();
 
 		assert_eq!(arr.len(), 3);
@@ -157,7 +150,6 @@ mod test {
 		let mut parser = super::value::<&str>();
 		let (a, rem) = parser.parse(&str).unwrap();
 		assert_eq!(rem, "");
-		a.assert_lead_trail(None, None);
 		let obj = a.value().extract_object().value().extract_contents();
 
 		assert_eq!(obj.len(), 3);
