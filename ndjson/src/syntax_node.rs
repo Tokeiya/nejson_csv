@@ -4,6 +4,7 @@ mod node;
 mod node_value;
 mod non_terminal_node;
 mod object_element;
+mod object_identity;
 mod terminal_node;
 
 pub mod prelude {
