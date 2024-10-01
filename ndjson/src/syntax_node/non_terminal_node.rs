@@ -71,7 +71,6 @@ pub mod test_helper {
 #[cfg(test)]
 mod test {
 	use super::super::node_value::NodeValue;
-	use super::super::prelude::*;
 	use super::*;
 	use crate::syntax_node::test_prelude::*;
 

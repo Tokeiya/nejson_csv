@@ -33,7 +33,6 @@ pub mod test_helper {
 #[cfg(test)]
 mod test {
 	use super::super::prelude::*;
-	use super::super::test_prelude::*;
 
 	#[test]
 	fn new() {

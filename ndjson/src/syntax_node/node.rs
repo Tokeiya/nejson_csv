@@ -20,11 +20,11 @@ impl Node {
 	}
 
 	pub fn parent(&self) -> Option<Rc<Node>> {
-		todo!()
+		self.parent.borrow().upgrade()
 	}
 
-	pub fn set_parent(&self, parent: Option<Rc<Node>>) {
-		todo!()
+	pub fn set_parent(&self, parent: Rc<Node>) {
+		self.parent.replace(Rc::downgrade(&parent));
 	}
 
 	pub fn value(&self) -> &NodeValue {
@@ -76,7 +76,7 @@ pub mod test_helper {
 mod test {
 	use super::super::test_prelude::*;
 	use super::*;
-	use crate::syntax_node::prelude::TerminalNode;
+	use crate::syntax_node::prelude::*;
 	#[test]
 	fn new() {
 		let v = NodeValue::Terminal(TerminalNode::String("hello world".to_string()));
@@ -93,5 +93,35 @@ mod test {
 			.value()
 			.extract_terminal()
 			.assert_string("hello world");
+	}
+
+	#[test]
+	fn set_parent() {
+		let fixture = NodeValue::Terminal(TerminalNode::Integer("42".to_string()));
+		let fixture = vec![ArrayElement::new(0, Node::new(fixture, ws(), ws()))];
+		let fixture = ArrayNode::new(fixture);
+
+		let fixture = NodeValue::Array(fixture);
+		let fixture = Node::new(fixture, ws(), ws());
+
+		if let NodeValue::Array(vec) = fixture.value() {
+			if let NonTerminalNodeValue::Contents(vec) = vec.value() {
+				for elem in vec.iter() {
+					let value = elem.value();
+					value.set_parent(fixture.clone());
+				}
+			}
+		}
+
+		assert!(fixture.parent().is_none());
+
+		if let NodeValue::Array(vec) = fixture.value() {
+			if let NonTerminalNodeValue::Contents(vec) = vec.value() {
+				for elem in vec.iter() {
+					let p = elem.value().parent().unwrap();
+					assert!(Rc::ptr_eq(&fixture, &p));
+				}
+			}
+		}
 	}
 }

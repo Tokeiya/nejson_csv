@@ -1,6 +1,6 @@
 use super::number::number;
 use super::{array::array, boolean::boolean, null::null, object::object, string::string};
-use crate::syntax_node::prelude::Node;
+use crate::syntax_node::prelude::*;
 use combine as cmb;
 use combine::{choice, parser, Parser, Stream};
 use std::rc::Rc;
@@ -18,7 +18,25 @@ pub fn ws<I: Stream<Token = char>>() -> impl Parser<I, Output = String> {
 
 fn value_<I: Stream<Token = char>>() -> impl Parser<I, Output = Rc<Node>> {
 	let v = choice!(boolean(), null(), string(), number(), array(), object());
-	(ws(), v, ws()).map(|(l, v, t)| Node::new(v, l, t))
+	(ws(), v, ws()).map(|(l, v, t)| {
+		let root = Node::new(v, l, t);
+
+		if let NodeValue::Array(arr) = root.value() {
+			if let NonTerminalNodeValue::Contents(arr) = arr.value() {
+				for elem in arr.iter() {
+					elem.value().set_parent(root.clone());
+				}
+			}
+		} else if let NodeValue::Object(obj) = root.value() {
+			if let NonTerminalNodeValue::Contents(obj) = obj.value() {
+				for elem in obj.iter() {
+					elem.value().set_parent(root.clone());
+				}
+			}
+		}
+
+		root
+	})
 }
 
 parser! {
@@ -31,6 +49,7 @@ parser! {
 mod test {
 	use super::*;
 	use crate::syntax_node::test_prelude::*;
+	use std::ptr::eq;
 
 	fn add_ws(s: &str) -> String {
 		format!("{WS}{s}{WS}")
@@ -213,5 +232,21 @@ mod test {
 		let (a, r) = parser.parse("").unwrap();
 		assert_eq!("", a);
 		assert_eq!("", r)
+	}
+
+	#[test]
+	fn parent() {
+		let mut parser = value::<&str>();
+		let (root, _) = parser.parse("[1,2]").unwrap();
+
+		if let NodeValue::Array(arr) = root.value() {
+			if let NonTerminalNodeValue::Contents(arr) = arr.value() {
+				for elem in arr.iter() {
+					let c = Rc::as_ptr(&elem.value().parent().unwrap());
+					let r = Rc::as_ptr(&root);
+					assert!(eq(r, c));
+				}
+			}
+		}
 	}
 }
