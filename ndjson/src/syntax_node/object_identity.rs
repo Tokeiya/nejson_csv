@@ -1,8 +1,16 @@
-use crate::data_node::{StringToken, StringTokenizer};
+use crate::data_node::{StringParseError, StringToken, StringTokenizer};
 
 pub struct ObjectIdentity {
 	raw: String,
 	escaped: Option<String>,
+}
+
+impl TryFrom<&str> for ObjectIdentity {
+	type Error = StringParseError;
+
+	fn try_from(value: &str) -> Result<Self, Self::Error> {
+		todo!()
+	}
 }
 
 impl From<&str> for ObjectIdentity {
