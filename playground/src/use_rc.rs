@@ -1,16 +1,17 @@
 use std::cell::RefCell;
 use std::rc::{Rc, Weak};
-
+#[allow(dead_code)]
 pub enum Value {
 	Terminal(i32),
 	NonTerminal(Vec<Rc<Node>>),
 }
-
+#[allow(dead_code)]
 pub struct Node {
 	value: Value,
 	parent: RefCell<Weak<Node>>,
 }
 
+#[allow(dead_code)]
 impl Node {
 	pub fn new_terminal(value: i32) -> Rc<Self> {
 		Rc::new(Self {
@@ -20,7 +21,7 @@ impl Node {
 	}
 
 	pub fn new_nonterminal(children: impl IntoIterator<Item = Rc<Node>>) -> Rc<Self> {
-		let mut ret = Rc::new(Node {
+		let ret = Rc::new(Node {
 			value: Value::NonTerminal(children.into_iter().collect()),
 			parent: RefCell::new(Weak::default()),
 		});
@@ -50,7 +51,8 @@ impl Node {
 	}
 }
 
+#[allow(dead_code)]
 pub fn usage() {
 	let children = vec![Node::new_terminal(42), Node::new_terminal(43)];
-	let root = Node::new_nonterminal(children);
+	let _ = Node::new_nonterminal(children);
 }

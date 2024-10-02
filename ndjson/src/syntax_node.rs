@@ -16,6 +16,7 @@ pub mod prelude {
 		ArrayNode, NonTerminalNode, NonTerminalNodeValue, ObjectNode,
 	};
 	pub use super::object_element::ObjectElement;
+	pub use super::object_identity::ObjectIdentity;
 	pub use super::terminal_node::TerminalNode;
 }
 
