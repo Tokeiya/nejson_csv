@@ -1,4 +1,5 @@
 use crate::data_node::{StringParseError, StringToken, StringTokenizer};
+use std::cmp::{Eq, PartialEq};
 
 pub struct ObjectIdentity {
 	raw: String,
@@ -37,6 +38,13 @@ impl TryFrom<&str> for ObjectIdentity {
 	}
 }
 
+impl PartialEq<ObjectIdentity> for ObjectIdentity {
+	fn eq(&self, other: &ObjectIdentity) -> bool {
+		self.escaped() == other.escaped()
+	}
+}
+impl Eq for ObjectIdentity {}
+
 impl ObjectIdentity {
 	pub fn raw(&self) -> &str {
 		&self.raw
@@ -74,6 +82,7 @@ pub mod test_helper {
 #[cfg(test)]
 mod test {
 	use super::*;
+	use crate::test_helper::test_prelude::*;
 
 	#[test]
 	fn from_str() {
@@ -98,5 +107,36 @@ mod test {
 			.err()
 			.unwrap();
 		fixture.assert_invalid_surrogate("\\uDE0A", "");
+	}
+
+	#[test]
+	fn eq() {
+		let x = ObjectIdentity::try_from("hello world").unwrap();
+		let y = ObjectIdentity::try_from("hello world").unwrap();
+		let z = ObjectIdentity::try_from("hello world").unwrap();
+		let not_equal = ObjectIdentity::try_from("Hello world").unwrap();
+		equivalent(&x, &y, &z, &not_equal);
+
+		let x = ObjectIdentity::try_from("").unwrap();
+		let y = ObjectIdentity::try_from("").unwrap();
+		let z = ObjectIdentity::try_from("").unwrap();
+		let not_equal = ObjectIdentity::try_from(" ").unwrap();
+		equivalent(&x, &y, &z, &not_equal);
+
+		let x = ObjectIdentity::try_from(r#"hello\nworld"#).unwrap();
+		let y = ObjectIdentity::try_from(r#"hello\nworld"#).unwrap();
+		let z = ObjectIdentity::try_from(r#"hello\nworld"#).unwrap();
+		let not_equal = ObjectIdentity::try_from(r#"hello world"#).unwrap();
+		equivalent(&x, &y, &z, &not_equal);
+
+		let x = ObjectIdentity::try_from(r#"\uD83E\uDEE0"#).unwrap();
+		let y = ObjectIdentity::try_from(r#"\uD83E\uDEE0"#).unwrap();
+		let z = ObjectIdentity::try_from(r#"\uD83E\uDEE0"#).unwrap();
+		let not_equal = ObjectIdentity::try_from(r#"\uD83E\uDEE1"#).unwrap();
+		equivalent(&x, &y, &z, &not_equal);
+
+		let x = ObjectIdentity::try_from(r#"a"#).unwrap();
+		let y = ObjectIdentity::try_from(r#"\u0061"#).unwrap();
+		assert!(x == y);
 	}
 }
