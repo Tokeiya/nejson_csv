@@ -1,47 +1,49 @@
-use crate::data_node::{StringToken, StringTokenizer};
+use crate::data_node::{StringParseError, StringToken, StringTokenizer};
+use std::cmp::{Eq, PartialEq};
 
 pub struct ObjectIdentity {
 	raw: String,
 	escaped: Option<String>,
 }
 
-impl From<&str> for ObjectIdentity {
-	fn from(value: &str) -> Self {
+impl TryFrom<&str> for ObjectIdentity {
+	type Error = StringParseError;
+
+	fn try_from(value: &str) -> Result<Self, Self::Error> {
 		let raw = value.to_string();
 
 		if value == "" {
-			Self { raw, escaped: None }
+			Ok(Self { raw, escaped: None })
 		} else {
-			let mut tokenizer = StringTokenizer::new(&raw);
+			let mut tokenizer = StringTokenizer::new(value);
 			let mut escaped = String::new();
 
 			loop {
 				if let Some(token) = tokenizer.next() {
+					let token = token?;
 					match token {
-						Ok(t) => match t {
-							StringToken::String(s) => escaped.push_str(&s),
-							StringToken::Char(c) => escaped.push(c),
-						},
-						Err(e) => {
-							escaped.push_str(&e.to_string());
-						}
+						StringToken::String(s) => escaped.push_str(s),
+						StringToken::Char(c) => escaped.push(c),
 					}
 				} else {
 					break;
 				}
 			}
 
-			if &escaped == value {
-				Self { raw, escaped: None }
-			} else {
-				Self {
-					raw,
-					escaped: Some(escaped),
-				}
-			}
+			Ok(Self {
+				raw,
+				escaped: Some(escaped),
+			})
 		}
 	}
 }
+
+impl PartialEq<ObjectIdentity> for ObjectIdentity {
+	fn eq(&self, other: &ObjectIdentity) -> bool {
+		self.escaped() == other.escaped()
+	}
+}
+impl Eq for ObjectIdentity {}
 
 impl ObjectIdentity {
 	pub fn raw(&self) -> &str {
@@ -80,15 +82,61 @@ pub mod test_helper {
 #[cfg(test)]
 mod test {
 	use super::*;
+	use crate::test_helper::test_prelude::*;
 
 	#[test]
 	fn from_str() {
-		let fixture = ObjectIdentity::from("hello world");
+		let fixture = ObjectIdentity::try_from("hello world").unwrap();
 		fixture.assert_raw("hello world");
 		fixture.assert_escaped("hello world");
 
-		let fixture = ObjectIdentity::from(r#"hello\nworld"#);
+		let fixture = ObjectIdentity::try_from(r#"hello\nworld"#).unwrap();
 		fixture.assert_raw(r#"hello\nworld"#);
 		fixture.assert_escaped("hello\nworld");
+	}
+
+	#[test]
+	fn try_from() {
+		let fixture = ObjectIdentity::try_from("\\a").err().unwrap();
+		fixture.assert_invalid_escape("\\a");
+
+		let fixture = ObjectIdentity::try_from("\\").err().unwrap();
+		fixture.assert_unexpected_eof();
+
+		let fixture = ObjectIdentity::try_from(r#"ab\uDE0A\uD83E\uDEE0"#)
+			.err()
+			.unwrap();
+		fixture.assert_invalid_surrogate("\\uDE0A", "");
+	}
+
+	#[test]
+	fn eq() {
+		let x = ObjectIdentity::try_from("hello world").unwrap();
+		let y = ObjectIdentity::try_from("hello world").unwrap();
+		let z = ObjectIdentity::try_from("hello world").unwrap();
+		let not_equal = ObjectIdentity::try_from("Hello world").unwrap();
+		equivalent(&x, &y, &z, &not_equal);
+
+		let x = ObjectIdentity::try_from("").unwrap();
+		let y = ObjectIdentity::try_from("").unwrap();
+		let z = ObjectIdentity::try_from("").unwrap();
+		let not_equal = ObjectIdentity::try_from(" ").unwrap();
+		equivalent(&x, &y, &z, &not_equal);
+
+		let x = ObjectIdentity::try_from(r#"hello\nworld"#).unwrap();
+		let y = ObjectIdentity::try_from(r#"hello\nworld"#).unwrap();
+		let z = ObjectIdentity::try_from(r#"hello\nworld"#).unwrap();
+		let not_equal = ObjectIdentity::try_from(r#"hello world"#).unwrap();
+		equivalent(&x, &y, &z, &not_equal);
+
+		let x = ObjectIdentity::try_from(r#"\uD83E\uDEE0"#).unwrap();
+		let y = ObjectIdentity::try_from(r#"\uD83E\uDEE0"#).unwrap();
+		let z = ObjectIdentity::try_from(r#"\uD83E\uDEE0"#).unwrap();
+		let not_equal = ObjectIdentity::try_from(r#"\uD83E\uDEE1"#).unwrap();
+		equivalent(&x, &y, &z, &not_equal);
+
+		let x = ObjectIdentity::try_from(r#"a"#).unwrap();
+		let y = ObjectIdentity::try_from(r#"\u0061"#).unwrap();
+		assert!(x == y);
 	}
 }

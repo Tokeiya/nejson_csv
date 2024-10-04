@@ -36,11 +36,18 @@ pub mod test_helper {
 
 	impl StringParseError {
 		pub fn assert_invalid_surrogate(&self, first: &str, second: &str) {
+			dbg!(self);
+
+			dbg!(first, second);
+
 			match self {
 				StringParseError::InvalidSurrogate {
 					first: f,
 					second: s,
 				} => {
+					dbg!(f);
+					dbg!(s);
+
 					assert_eq!(f, first);
 					assert_eq!(s, second);
 				}
