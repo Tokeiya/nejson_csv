@@ -27,9 +27,6 @@ impl StringTokenizer<'_> {
 	}
 
 	fn surrogate_pair(&mut self) -> Option<Result<StringToken<'_>, StringParseError>> {
-		dbg!(self.0.len());
-		dbg!(self.0);
-
 		if self.0.len() < 12 {
 			self.0 = "";
 			return Some(Err(StringParseError::UnexpectedEof()));

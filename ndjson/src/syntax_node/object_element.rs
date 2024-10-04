@@ -17,7 +17,7 @@ impl ObjectElement {
 			unreachable!()
 		};
 
-		let key = ObjectIdentity::from(key.as_str());
+		let key = ObjectIdentity::try_from(key.as_str()).unwrap();
 
 		Self { key, value }
 	}
