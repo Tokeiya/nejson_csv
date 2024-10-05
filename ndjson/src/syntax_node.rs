@@ -1,3 +1,4 @@
+mod full_qualified_name;
 mod identity;
 mod node;
 mod node_value;
@@ -6,6 +7,7 @@ mod object_identity;
 mod terminal_node;
 
 pub mod prelude {
+	pub use super::full_qualified_name::FullQualifiedName;
 	pub use super::identity::Identity;
 	pub use super::node::Node;
 	pub use super::node_value::NodeValue;
