@@ -1,11 +1,11 @@
 use super::identity::Identity;
 use super::node_value::NodeValue;
-use std::cell::RefCell;
+use std::cell::{Ref, RefCell};
 use std::rc::{Rc, Weak};
 
 pub struct Node {
 	value: NodeValue,
-	identity: Identity,
+	identity: RefCell<Identity>,
 	parent: RefCell<Weak<Node>>,
 }
 
@@ -14,7 +14,7 @@ impl Node {
 		Rc::new(Self {
 			value,
 			parent: RefCell::new(Weak::default()),
-			identity: Identity::Undefined,
+			identity: RefCell::new(Identity::Undefined),
 		})
 	}
 
@@ -26,12 +26,12 @@ impl Node {
 		self.parent.replace(Rc::downgrade(&parent));
 	}
 
-	pub fn identity(&self) -> &Identity {
-		todo!()
+	pub fn identity(&self) -> Ref<Identity> {
+		self.identity.borrow()
 	}
 
 	pub fn set_identity(&self, identity: Identity) {
-		todo!()
+		self.identity.replace(identity);
 	}
 
 	pub fn value(&self) -> &NodeValue {
@@ -52,6 +52,7 @@ pub mod test_helper {
 mod test {
 	use super::*;
 	use crate::syntax_node::prelude::*;
+
 	#[test]
 	fn new() {
 		let v = NodeValue::Terminal(TerminalNode::String("hello world".to_string()));
@@ -102,5 +103,16 @@ mod test {
 				}
 			}
 		}
+	}
+
+	#[test]
+	fn set_identity() {
+		let fixture = NodeValue::Terminal(TerminalNode::Integer("42".to_string()));
+		let fixture = Node::new(fixture);
+
+		let identity = Identity::from(42);
+		fixture.set_identity(identity);
+
+		fixture.identity().assert_index(42);
 	}
 }
