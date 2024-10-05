@@ -22,6 +22,11 @@ fn contents<I: Stream<Token = char>>() -> impl Parser<I, Output = NodeValue> {
 		for (i, n) in b.into_iter().enumerate() {
 			v.push(ArrayElement::new(i + 1, n));
 		}
+
+		for (idx, elem) in v.iter().enumerate() {
+			elem.value().set_identity(Identity::from(idx))
+		}
+
 		NodeValue::Array(ArrayNode::new(v))
 	});
 

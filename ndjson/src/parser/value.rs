@@ -25,15 +25,12 @@ fn value_<I: Stream<Token = char>>() -> impl Parser<I, Output = Rc<Node>> {
 			if let NonTerminalNodeValue::Contents(arr) = arr.value() {
 				for elem in arr.iter() {
 					elem.value().set_parent(root.clone());
-					elem.value().set_identity(Identity::from(elem.index()));
 				}
 			}
 		} else if let NodeValue::Object(obj) = root.value() {
 			if let NonTerminalNodeValue::Contents(obj) = obj.value() {
 				for elem in obj.iter() {
 					elem.value().set_parent(root.clone());
-					elem.value()
-						.set_identity(Identity::from(elem.key().escaped()))
 				}
 			}
 		}

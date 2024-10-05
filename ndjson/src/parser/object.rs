@@ -26,6 +26,11 @@ fn contents<I: Stream<Token = char>>() -> impl Parser<I, Output = NodeValue> {
 		let mut v = b;
 		v.insert(0, a);
 
+		for elem in v.iter() {
+			elem.value()
+				.set_identity(Identity::from(elem.key().escaped()))
+		}
+
 		NodeValue::Object(ObjectNode::new(v))
 	});
 
