@@ -1,19 +1,19 @@
 use super::prelude::*;
 use std::rc::Rc;
 
-pub type ArrayNode = NonTerminalNode<Rc<Node>>;
-pub type ObjectNode = NonTerminalNode<Rc<Node>>;
+pub type ArrayNode = NonTerminalNode;
+pub type ObjectNode = NonTerminalNode;
 
-pub enum NonTerminalNodeValue<T> {
+pub enum NonTerminalNodeValue {
 	Empty,
-	Contents(Vec<T>),
+	Contents(Vec<Rc<Node>>),
 }
 
-pub struct NonTerminalNode<T> {
-	value: NonTerminalNodeValue<T>,
+pub struct NonTerminalNode {
+	value: NonTerminalNodeValue,
 }
 
-impl NonTerminalNode<Rc<Node>> {
+impl NonTerminalNode {
 	pub fn new(value: Vec<Rc<Node>>) -> Self {
 		Self {
 			value: NonTerminalNodeValue::Contents(value),
@@ -27,8 +27,8 @@ impl NonTerminalNode<Rc<Node>> {
 	}
 }
 
-impl<T> NonTerminalNode<T> {
-	pub fn value(&self) -> &NonTerminalNodeValue<T> {
+impl NonTerminalNode {
+	pub fn value(&self) -> &NonTerminalNodeValue {
 		&self.value
 	}
 }
@@ -36,14 +36,14 @@ impl<T> NonTerminalNode<T> {
 pub mod test_helper {
 	use super::*;
 
-	impl<T> NonTerminalNodeValue<T> {
+	impl NonTerminalNodeValue {
 		pub fn assert_empty(&self) {
 			let NonTerminalNodeValue::Empty = self else {
 				unreachable!()
 			};
 		}
 
-		pub fn extract_contents(&self) -> &[T] {
+		pub fn extract_contents(&self) -> &[Rc<Node>] {
 			match self {
 				NonTerminalNodeValue::Contents(value) => value,
 				_ => panic!("Expected contents"),
@@ -83,7 +83,7 @@ mod test {
 		node.value.assert_empty();
 	}
 
-	fn fixture() -> NonTerminalNode<Rc<Node>> {
+	fn fixture() -> NonTerminalNode {
 		let vec = vec![
 			Node::new(NodeValue::Terminal(TerminalNode::Integer("42".to_string()))),
 			Node::new(NodeValue::Terminal(TerminalNode::Float(
