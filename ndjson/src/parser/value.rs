@@ -25,12 +25,15 @@ fn value_<I: Stream<Token = char>>() -> impl Parser<I, Output = Rc<Node>> {
 			if let NonTerminalNodeValue::Contents(arr) = arr.value() {
 				for elem in arr.iter() {
 					elem.value().set_parent(root.clone());
+					elem.value().set_identity(Identity::from(elem.index()));
 				}
 			}
 		} else if let NodeValue::Object(obj) = root.value() {
 			if let NonTerminalNodeValue::Contents(obj) = obj.value() {
 				for elem in obj.iter() {
 					elem.value().set_parent(root.clone());
+					elem.value()
+						.set_identity(Identity::from(elem.key().escaped()))
 				}
 			}
 		}
@@ -124,6 +127,7 @@ mod test {
 		let mut parser = super::value::<&str>(); //::<&str>();
 		let (a, rem) = parser.parse(&str).unwrap();
 		assert_eq!(rem, "");
+		a.identity().assert_undefined();
 		let arr = a.value().extract_array().value().extract_contents();
 
 		assert_eq!(arr.len(), 3);
@@ -132,16 +136,24 @@ mod test {
 			.value()
 			.extract_terminal()
 			.assert_integer("1");
+
+		arr[0].value().identity().assert_index(0);
+
 		arr[1]
 			.value()
 			.value()
 			.extract_terminal()
 			.assert_integer("2");
+
+		arr[1].value().identity().assert_index(1);
+
 		arr[2]
 			.value()
 			.value()
 			.extract_terminal()
 			.assert_integer("3");
+
+		arr[2].value().identity().assert_index(2);
 	}
 
 	#[test]
@@ -149,11 +161,13 @@ mod test {
 		let str = add_ws(r#"{"a": 1, "b": 2, "c": 3}"#);
 		let mut parser = super::value::<&str>();
 		let (a, rem) = parser.parse(&str).unwrap();
+		a.identity().assert_undefined();
 		assert_eq!(rem, "");
 		let obj = a.value().extract_object().value().extract_contents();
 
 		assert_eq!(obj.len(), 3);
 		obj[0].assert_key("a");
+		obj[0].value().identity().assert_key("a");
 		obj[0]
 			.value()
 			.value()
@@ -161,6 +175,7 @@ mod test {
 			.assert_integer("1");
 
 		obj[1].assert_key("b");
+		obj[1].value().identity().assert_key("b");
 		obj[1]
 			.value()
 			.value()
@@ -168,6 +183,7 @@ mod test {
 			.assert_integer("2");
 
 		obj[2].assert_key("c");
+		obj[2].value().identity().assert_key("c");
 		obj[2]
 			.value()
 			.value()
