@@ -30,7 +30,7 @@ fn value_<I: Stream<Token = char>>() -> impl Parser<I, Output = Rc<Node>> {
 		} else if let NodeValue::Object(obj) = root.value() {
 			if let NonTerminalNodeValue::Contents(obj) = obj.value() {
 				for elem in obj.iter() {
-					elem.value().set_parent(root.clone());
+					elem.set_parent(root.clone());
 				}
 			}
 		}
@@ -151,29 +151,14 @@ mod test {
 		let obj = a.value().extract_object().value().extract_contents();
 
 		assert_eq!(obj.len(), 3);
-		obj[0].assert_key("a");
-		obj[0].value().identity().assert_key("a");
-		obj[0]
-			.value()
-			.value()
-			.extract_terminal()
-			.assert_integer("1");
+		obj[0].identity().assert_key("a");
+		obj[0].value().extract_terminal().assert_integer("1");
 
-		obj[1].assert_key("b");
-		obj[1].value().identity().assert_key("b");
-		obj[1]
-			.value()
-			.value()
-			.extract_terminal()
-			.assert_integer("2");
+		obj[1].identity().assert_key("b");
+		obj[1].value().extract_terminal().assert_integer("2");
 
-		obj[2].assert_key("c");
-		obj[2].value().identity().assert_key("c");
-		obj[2]
-			.value()
-			.value()
-			.extract_terminal()
-			.assert_integer("3");
+		obj[2].identity().assert_key("c");
+		obj[2].value().extract_terminal().assert_integer("3");
 	}
 
 	#[test]
@@ -189,21 +174,12 @@ mod test {
 
 		let piv = &obj[0];
 
-		let inner = piv
-			.value()
-			.value()
-			.extract_object()
-			.value()
-			.extract_contents();
+		let inner = piv.value().extract_object().value().extract_contents();
 		assert_eq!(inner.len(), 1);
 
-		inner[0].assert_key("o");
+		inner[0].identity().assert_key("o");
 
-		inner[0]
-			.value()
-			.value()
-			.extract_terminal()
-			.assert_integer("10");
+		inner[0].value().extract_terminal().assert_integer("10");
 	}
 
 	#[test]

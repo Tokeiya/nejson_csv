@@ -1,9 +1,8 @@
-use super::object_element::ObjectElement;
 use super::prelude::*;
 use std::rc::Rc;
 
 pub type ArrayNode = NonTerminalNode<Rc<Node>>;
-pub type ObjectNode = NonTerminalNode<ObjectElement>;
+pub type ObjectNode = NonTerminalNode<Rc<Node>>;
 
 pub enum NonTerminalNodeValue<T> {
 	Empty,
@@ -16,20 +15,6 @@ pub struct NonTerminalNode<T> {
 
 impl NonTerminalNode<Rc<Node>> {
 	pub fn new(value: Vec<Rc<Node>>) -> Self {
-		Self {
-			value: NonTerminalNodeValue::Contents(value),
-		}
-	}
-
-	pub fn empty() -> Self {
-		Self {
-			value: NonTerminalNodeValue::Empty,
-		}
-	}
-}
-
-impl NonTerminalNode<ObjectElement> {
-	pub fn new(value: Vec<ObjectElement>) -> Self {
 		Self {
 			value: NonTerminalNodeValue::Contents(value),
 		}
@@ -98,35 +83,32 @@ mod test {
 		node.value.assert_empty();
 	}
 
+	fn fixture() -> NonTerminalNode<Rc<Node>> {
+		let vec = vec![
+			Node::new(NodeValue::Terminal(TerminalNode::Integer("42".to_string()))),
+			Node::new(NodeValue::Terminal(TerminalNode::Float(
+				"42.195".to_string(),
+			))),
+		];
+
+		vec[0].set_identity(Identity::from("foo"));
+		vec[1].set_identity(Identity::from("bar"));
+
+		ObjectNode::new(vec)
+	}
+
 	#[test]
 	fn object_new() {
-		let node = ObjectNode::new(vec![
-			ObjectElement::new(
-				Node::new(NodeValue::Terminal(TerminalNode::String("foo".to_string()))),
-				Node::new(NodeValue::Terminal(TerminalNode::Integer("42".to_string()))),
-			),
-			ObjectElement::new(
-				Node::new(NodeValue::Terminal(TerminalNode::String("bar".to_string()))),
-				Node::new(NodeValue::Terminal(TerminalNode::Float(
-					"42.195".to_string(),
-				))),
-			),
-		]);
+		let node = fixture();
 
 		let contents = node.value().extract_contents();
 		assert_eq!(contents.len(), 2);
-		contents[0].assert_key("foo");
 
-		contents[0]
-			.value()
-			.value()
-			.extract_terminal()
-			.assert_integer("42");
+		contents[0].identity().assert_key("foo");
+		contents[0].value().extract_terminal().assert_integer("42");
 
-		contents[1].assert_key("bar");
-
+		contents[1].identity().assert_key("bar");
 		contents[1]
-			.value()
 			.value()
 			.extract_terminal()
 			.assert_float("42.195");
@@ -147,34 +129,15 @@ mod test {
 		array[1].value().extract_terminal().assert_integer("42");
 		array[1].identity().assert_index(1);
 
-		let node = ObjectNode::new(vec![
-			ObjectElement::new(
-				Node::new(NodeValue::Terminal(TerminalNode::String("foo".to_string()))),
-				Node::new(NodeValue::Terminal(TerminalNode::Integer("42".to_string()))),
-			),
-			ObjectElement::new(
-				Node::new(NodeValue::Terminal(TerminalNode::String("bar".to_string()))),
-				Node::new(NodeValue::Terminal(TerminalNode::Float(
-					"42.195".to_string(),
-				))),
-			),
-		]);
+		let node = fixture();
 
 		let object = node.value().extract_contents();
 		assert_eq!(object.len(), 2);
 
-		object[0].assert_key("foo");
-		object[0]
-			.value()
-			.value()
-			.extract_terminal()
-			.assert_integer("42");
+		object[0].identity().assert_key("foo");
+		object[0].value().extract_terminal().assert_integer("42");
 
-		object[1].assert_key("bar");
-		object[1]
-			.value()
-			.value()
-			.extract_terminal()
-			.assert_float("42.195");
+		object[1].identity().assert_key("bar");
+		object[1].value().extract_terminal().assert_float("42.195");
 	}
 }
