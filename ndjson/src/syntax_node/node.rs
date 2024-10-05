@@ -1,9 +1,11 @@
+use super::identity::Identity;
 use super::node_value::NodeValue;
-use std::cell::RefCell;
+use std::cell::{Ref, RefCell};
 use std::rc::{Rc, Weak};
 
 pub struct Node {
 	value: NodeValue,
+	identity: RefCell<Identity>,
 	parent: RefCell<Weak<Node>>,
 }
 
@@ -12,6 +14,7 @@ impl Node {
 		Rc::new(Self {
 			value,
 			parent: RefCell::new(Weak::default()),
+			identity: RefCell::new(Identity::Undefined),
 		})
 	}
 
@@ -21,6 +24,14 @@ impl Node {
 
 	pub fn set_parent(&self, parent: Rc<Node>) {
 		self.parent.replace(Rc::downgrade(&parent));
+	}
+
+	pub fn identity(&self) -> Ref<Identity> {
+		self.identity.borrow()
+	}
+
+	pub fn set_identity(&self, identity: Identity) {
+		self.identity.replace(identity);
 	}
 
 	pub fn value(&self) -> &NodeValue {
@@ -41,6 +52,7 @@ pub mod test_helper {
 mod test {
 	use super::*;
 	use crate::syntax_node::prelude::*;
+
 	#[test]
 	fn new() {
 		let v = NodeValue::Terminal(TerminalNode::String("hello world".to_string()));
@@ -55,12 +67,18 @@ mod test {
 			.value()
 			.extract_terminal()
 			.assert_string("hello world");
+
+		fixture.identity().assert_undefined();
 	}
 
 	#[test]
 	fn set_parent() {
 		let fixture = NodeValue::Terminal(TerminalNode::Integer("42".to_string()));
-		let fixture = vec![ArrayElement::new(0, Node::new(fixture))];
+		let mut fixture = vec![Node::new(fixture)];
+		for (idx, elem) in fixture.iter_mut().enumerate() {
+			elem.set_identity(Identity::from(idx))
+		}
+
 		let fixture = ArrayNode::new(fixture);
 
 		let fixture = NodeValue::Array(fixture);
@@ -69,8 +87,7 @@ mod test {
 		if let NodeValue::Array(vec) = fixture.value() {
 			if let NonTerminalNodeValue::Contents(vec) = vec.value() {
 				for elem in vec.iter() {
-					let value = elem.value();
-					value.set_parent(fixture.clone());
+					elem.set_parent(fixture.clone());
 				}
 			}
 		}
@@ -80,10 +97,21 @@ mod test {
 		if let NodeValue::Array(vec) = fixture.value() {
 			if let NonTerminalNodeValue::Contents(vec) = vec.value() {
 				for elem in vec.iter() {
-					let p = elem.value().parent().unwrap();
+					let p = elem.parent().unwrap();
 					assert!(Rc::ptr_eq(&fixture, &p));
 				}
 			}
 		}
+	}
+
+	#[test]
+	fn set_identity() {
+		let fixture = NodeValue::Terminal(TerminalNode::Integer("42".to_string()));
+		let fixture = Node::new(fixture);
+
+		let identity = Identity::from(42);
+		fixture.set_identity(identity);
+
+		fixture.identity().assert_index(42);
 	}
 }

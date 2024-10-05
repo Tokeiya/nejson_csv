@@ -24,13 +24,13 @@ fn value_<I: Stream<Token = char>>() -> impl Parser<I, Output = Rc<Node>> {
 		if let NodeValue::Array(arr) = root.value() {
 			if let NonTerminalNodeValue::Contents(arr) = arr.value() {
 				for elem in arr.iter() {
-					elem.value().set_parent(root.clone());
+					elem.set_parent(root.clone());
 				}
 			}
 		} else if let NodeValue::Object(obj) = root.value() {
 			if let NonTerminalNodeValue::Contents(obj) = obj.value() {
 				for elem in obj.iter() {
-					elem.value().set_parent(root.clone());
+					elem.set_parent(root.clone());
 				}
 			}
 		}
@@ -116,7 +116,7 @@ mod test {
 		let mut parser = super::value::<&str>();
 		let (v, r) = parser.parse("[   ]").unwrap();
 		assert_eq!(r, "");
-		v.value().extract_array().value().assert_empty("   ")
+		v.value().extract_array().value().assert_empty();
 	}
 	#[test]
 	fn array() {
@@ -124,24 +124,21 @@ mod test {
 		let mut parser = super::value::<&str>(); //::<&str>();
 		let (a, rem) = parser.parse(&str).unwrap();
 		assert_eq!(rem, "");
+		a.identity().assert_undefined();
 		let arr = a.value().extract_array().value().extract_contents();
 
 		assert_eq!(arr.len(), 3);
-		arr[0]
-			.value()
-			.value()
-			.extract_terminal()
-			.assert_integer("1");
-		arr[1]
-			.value()
-			.value()
-			.extract_terminal()
-			.assert_integer("2");
-		arr[2]
-			.value()
-			.value()
-			.extract_terminal()
-			.assert_integer("3");
+		arr[0].value().extract_terminal().assert_integer("1");
+
+		arr[0].identity().assert_index(0);
+
+		arr[1].value().extract_terminal().assert_integer("2");
+
+		arr[1].identity().assert_index(1);
+
+		arr[2].value().extract_terminal().assert_integer("3");
+
+		arr[2].identity().assert_index(2);
 	}
 
 	#[test]
@@ -149,30 +146,19 @@ mod test {
 		let str = add_ws(r#"{"a": 1, "b": 2, "c": 3}"#);
 		let mut parser = super::value::<&str>();
 		let (a, rem) = parser.parse(&str).unwrap();
+		a.identity().assert_undefined();
 		assert_eq!(rem, "");
 		let obj = a.value().extract_object().value().extract_contents();
 
 		assert_eq!(obj.len(), 3);
-		obj[0].assert_key("a");
-		obj[0]
-			.value()
-			.value()
-			.extract_terminal()
-			.assert_integer("1");
+		obj[0].identity().assert_key("a");
+		obj[0].value().extract_terminal().assert_integer("1");
 
-		obj[1].assert_key("b");
-		obj[1]
-			.value()
-			.value()
-			.extract_terminal()
-			.assert_integer("2");
+		obj[1].identity().assert_key("b");
+		obj[1].value().extract_terminal().assert_integer("2");
 
-		obj[2].assert_key("c");
-		obj[2]
-			.value()
-			.value()
-			.extract_terminal()
-			.assert_integer("3");
+		obj[2].identity().assert_key("c");
+		obj[2].value().extract_terminal().assert_integer("3");
 	}
 
 	#[test]
@@ -188,21 +174,12 @@ mod test {
 
 		let piv = &obj[0];
 
-		let inner = piv
-			.value()
-			.value()
-			.extract_object()
-			.value()
-			.extract_contents();
+		let inner = piv.value().extract_object().value().extract_contents();
 		assert_eq!(inner.len(), 1);
 
-		inner[0].assert_key("o");
+		inner[0].identity().assert_key("o");
 
-		inner[0]
-			.value()
-			.value()
-			.extract_terminal()
-			.assert_integer("10");
+		inner[0].value().extract_terminal().assert_integer("10");
 	}
 
 	#[test]
@@ -234,7 +211,7 @@ mod test {
 		if let NodeValue::Array(arr) = root.value() {
 			if let NonTerminalNodeValue::Contents(arr) = arr.value() {
 				for elem in arr.iter() {
-					let c = Rc::as_ptr(&elem.value().parent().unwrap());
+					let c = Rc::as_ptr(&elem.parent().unwrap());
 					let r = Rc::as_ptr(&root);
 					assert!(eq(r, c));
 				}

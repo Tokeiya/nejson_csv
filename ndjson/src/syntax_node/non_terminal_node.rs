@@ -1,48 +1,34 @@
-use super::object_element::ObjectElement;
 use super::prelude::*;
+use std::rc::Rc;
 
-pub type ArrayNode = NonTerminalNode<ArrayElement>;
-pub type ObjectNode = NonTerminalNode<ObjectElement>;
+pub type ArrayNode = NonTerminalNode;
+pub type ObjectNode = NonTerminalNode;
 
-pub enum NonTerminalNodeValue<T> {
-	Empty(String),
-	Contents(Vec<T>),
+pub enum NonTerminalNodeValue {
+	Empty,
+	Contents(Vec<Rc<Node>>),
 }
 
-pub struct NonTerminalNode<T> {
-	value: NonTerminalNodeValue<T>,
+pub struct NonTerminalNode {
+	value: NonTerminalNodeValue,
 }
 
-impl NonTerminalNode<ArrayElement> {
-	pub fn new(value: Vec<ArrayElement>) -> Self {
+impl NonTerminalNode {
+	pub fn new(value: Vec<Rc<Node>>) -> Self {
 		Self {
 			value: NonTerminalNodeValue::Contents(value),
 		}
 	}
 
-	pub fn empty(white_space: String) -> Self {
+	pub fn empty() -> Self {
 		Self {
-			value: NonTerminalNodeValue::Empty(white_space),
+			value: NonTerminalNodeValue::Empty,
 		}
 	}
 }
 
-impl NonTerminalNode<ObjectElement> {
-	pub fn new(value: Vec<ObjectElement>) -> Self {
-		Self {
-			value: NonTerminalNodeValue::Contents(value),
-		}
-	}
-
-	pub fn empty(white_space: String) -> Self {
-		Self {
-			value: NonTerminalNodeValue::Empty(white_space),
-		}
-	}
-}
-
-impl<T> NonTerminalNode<T> {
-	pub fn value(&self) -> &NonTerminalNodeValue<T> {
+impl NonTerminalNode {
+	pub fn value(&self) -> &NonTerminalNodeValue {
 		&self.value
 	}
 }
@@ -50,17 +36,14 @@ impl<T> NonTerminalNode<T> {
 pub mod test_helper {
 	use super::*;
 
-	impl<T> NonTerminalNodeValue<T> {
-		pub fn assert_empty(&self, expected: &str) {
-			match self {
-				NonTerminalNodeValue::Empty(value) => {
-					assert_eq!(value, expected);
-				}
-				_ => panic!("Expected empty value"),
-			}
+	impl NonTerminalNodeValue {
+		pub fn assert_empty(&self) {
+			let NonTerminalNodeValue::Empty = self else {
+				unreachable!()
+			};
 		}
 
-		pub fn extract_contents(&self) -> &[T] {
+		pub fn extract_contents(&self) -> &[Rc<Node>] {
 			match self {
 				NonTerminalNodeValue::Contents(value) => value,
 				_ => panic!("Expected contents"),
@@ -75,15 +58,13 @@ mod test {
 
 	fn array_fixture() -> ArrayNode {
 		let arr = vec![
-			ArrayElement::new(
-				0,
-				Node::new(NodeValue::Terminal(TerminalNode::String("foo".to_string()))),
-			),
-			ArrayElement::new(
-				1,
-				Node::new(NodeValue::Terminal(TerminalNode::Integer("42".to_string()))),
-			),
+			Node::new(NodeValue::Terminal(TerminalNode::String("foo".to_string()))),
+			Node::new(NodeValue::Terminal(TerminalNode::Integer("42".to_string()))),
 		];
+
+		for (i, e) in arr.iter().enumerate() {
+			e.set_identity(Identity::from(i))
+		}
 
 		ArrayNode::new(arr)
 	}
@@ -94,59 +75,46 @@ mod test {
 
 		let contents = node.value().extract_contents();
 		assert_eq!(contents.len(), 2);
-		contents[0]
-			.value()
-			.value()
-			.extract_terminal()
-			.assert_string("foo");
-		contents[0].assert_index(0);
+		contents[0].value().extract_terminal().assert_string("foo");
 
-		contents[1]
-			.value()
-			.value()
-			.extract_terminal()
-			.assert_integer("42");
-		contents[1].assert_index(1);
+		contents[1].value().extract_terminal().assert_integer("42");
 
-		let node = ArrayNode::empty("space".to_string());
-		node.value.assert_empty("space");
+		let node = ArrayNode::empty();
+		node.value.assert_empty();
+	}
+
+	fn fixture() -> NonTerminalNode {
+		let vec = vec![
+			Node::new(NodeValue::Terminal(TerminalNode::Integer("42".to_string()))),
+			Node::new(NodeValue::Terminal(TerminalNode::Float(
+				"42.195".to_string(),
+			))),
+		];
+
+		vec[0].set_identity(Identity::from("foo"));
+		vec[1].set_identity(Identity::from("bar"));
+
+		ObjectNode::new(vec)
 	}
 
 	#[test]
 	fn object_new() {
-		let node = ObjectNode::new(vec![
-			ObjectElement::new(
-				Node::new(NodeValue::Terminal(TerminalNode::String("foo".to_string()))),
-				Node::new(NodeValue::Terminal(TerminalNode::Integer("42".to_string()))),
-			),
-			ObjectElement::new(
-				Node::new(NodeValue::Terminal(TerminalNode::String("bar".to_string()))),
-				Node::new(NodeValue::Terminal(TerminalNode::Float(
-					"42.195".to_string(),
-				))),
-			),
-		]);
+		let node = fixture();
 
 		let contents = node.value().extract_contents();
 		assert_eq!(contents.len(), 2);
-		contents[0].assert_key("foo");
 
-		contents[0]
-			.value()
-			.value()
-			.extract_terminal()
-			.assert_integer("42");
+		contents[0].identity().assert_key("foo");
+		contents[0].value().extract_terminal().assert_integer("42");
 
-		contents[1].assert_key("bar");
-
+		contents[1].identity().assert_key("bar");
 		contents[1]
-			.value()
 			.value()
 			.extract_terminal()
 			.assert_float("42.195");
 
-		let node = ObjectNode::empty("space".to_string());
-		node.value.assert_empty("space");
+		let node = ObjectNode::empty();
+		node.value.assert_empty();
 	}
 
 	#[test]
@@ -155,48 +123,21 @@ mod test {
 		let array = node.value().extract_contents();
 		assert_eq!(array.len(), 2);
 
-		array[0]
-			.value()
-			.value()
-			.extract_terminal()
-			.assert_string("foo");
-		array[0].assert_index(0);
+		array[0].value().extract_terminal().assert_string("foo");
+		array[0].identity().assert_index(0);
 
-		array[1]
-			.value()
-			.value()
-			.extract_terminal()
-			.assert_integer("42");
-		array[1].assert_index(1);
+		array[1].value().extract_terminal().assert_integer("42");
+		array[1].identity().assert_index(1);
 
-		let node = ObjectNode::new(vec![
-			ObjectElement::new(
-				Node::new(NodeValue::Terminal(TerminalNode::String("foo".to_string()))),
-				Node::new(NodeValue::Terminal(TerminalNode::Integer("42".to_string()))),
-			),
-			ObjectElement::new(
-				Node::new(NodeValue::Terminal(TerminalNode::String("bar".to_string()))),
-				Node::new(NodeValue::Terminal(TerminalNode::Float(
-					"42.195".to_string(),
-				))),
-			),
-		]);
+		let node = fixture();
 
 		let object = node.value().extract_contents();
 		assert_eq!(object.len(), 2);
 
-		object[0].assert_key("foo");
-		object[0]
-			.value()
-			.value()
-			.extract_terminal()
-			.assert_integer("42");
+		object[0].identity().assert_key("foo");
+		object[0].value().extract_terminal().assert_integer("42");
 
-		object[1].assert_key("bar");
-		object[1]
-			.value()
-			.value()
-			.extract_terminal()
-			.assert_float("42.195");
+		object[1].identity().assert_key("bar");
+		object[1].value().extract_terminal().assert_float("42.195");
 	}
 }

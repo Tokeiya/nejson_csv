@@ -13,16 +13,17 @@ fn following<I: Stream<Token = char>>() -> impl Parser<I, Output = Vec<Rc<Node>>
 }
 
 fn contents<I: Stream<Token = char>>() -> impl Parser<I, Output = NodeValue> {
-	let empty = ws::<I>().map(|s| NodeValue::Array(ArrayNode::empty(s)));
+	let empty = ws::<I>().map(|_| NodeValue::Array(ArrayNode::empty()));
 
 	let content = (first::<I>(), following()).map(|(a, b)| {
-		let mut v = Vec::new();
-		v.push(ArrayElement::new(0, a));
+		let mut vec = b;
+		vec.insert(0, a);
 
-		for (i, n) in b.into_iter().enumerate() {
-			v.push(ArrayElement::new(i + 1, n));
+		for (idx, elem) in vec.iter().enumerate() {
+			elem.set_identity(Identity::from(idx))
 		}
-		NodeValue::Array(ArrayNode::new(v))
+
+		NodeValue::Array(ArrayNode::new(vec))
 	});
 
 	cmb::attempt(content).or(empty)
@@ -101,7 +102,7 @@ mod test {
 
 		let (a, r) = parser.parse("   ").unwrap();
 		assert_eq!(r, "");
-		a.extract_array().value().assert_empty("   ");
+		a.extract_array().value().assert_empty();
 	}
 
 	#[test]
@@ -116,31 +117,28 @@ mod test {
 		assert_eq!(act.len(), 6);
 
 		let piv = &act[0];
-		piv.value().value().extract_terminal().assert_string("rust");
-		piv.assert_index(0);
+		piv.value().extract_terminal().assert_string("rust");
+		piv.identity().assert_index(0);
 
 		let piv = &act[1];
-		piv.value().value().extract_terminal().assert_integer("42");
-		piv.assert_index(1);
+		piv.value().extract_terminal().assert_integer("42");
+		piv.identity().assert_index(1);
 
 		let piv = &act[2];
-		piv.value().value().extract_terminal().assert_null();
-		piv.assert_index(2);
+		piv.value().extract_terminal().assert_null();
+		piv.identity().assert_index(2);
 
 		let piv = &act[3];
-		piv.value().value().extract_terminal().assert_true();
-		piv.assert_index(3);
+		piv.value().extract_terminal().assert_true();
+		piv.identity().assert_index(3);
 
 		let piv = &act[4];
-		piv.value().value().extract_terminal().assert_false();
-		piv.assert_index(4);
+		piv.value().extract_terminal().assert_false();
+		piv.identity().assert_index(4);
 
 		let piv = &act[5];
-		piv.value()
-			.value()
-			.extract_terminal()
-			.assert_float("42.195");
-		piv.assert_index(5);
+		piv.value().extract_terminal().assert_float("42.195");
+		piv.identity().assert_index(5);
 	}
 
 	#[test]
@@ -150,13 +148,13 @@ mod test {
 
 		let (act, rem) = parser.parse(&str).unwrap();
 		assert_eq!(rem, "");
-		act.extract_array().value().assert_empty("");
+		act.extract_array().value().assert_empty();
 
 		let str = format!("[{WS}]");
 		let mut parser = super::array::<&str>();
 		let (act, rem) = parser.parse(&str).unwrap();
 		assert_eq!(rem, "");
-		act.extract_array().value().assert_empty(WS);
+		act.extract_array().value().assert_empty();
 	}
 
 	#[test]
