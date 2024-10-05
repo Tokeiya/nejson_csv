@@ -1,9 +1,11 @@
+use super::identity::Identity;
 use super::node_value::NodeValue;
 use std::cell::RefCell;
 use std::rc::{Rc, Weak};
 
 pub struct Node {
 	value: NodeValue,
+	identity: Identity,
 	parent: RefCell<Weak<Node>>,
 }
 
@@ -12,6 +14,7 @@ impl Node {
 		Rc::new(Self {
 			value,
 			parent: RefCell::new(Weak::default()),
+			identity: Identity::Undefined,
 		})
 	}
 
@@ -21,6 +24,14 @@ impl Node {
 
 	pub fn set_parent(&self, parent: Rc<Node>) {
 		self.parent.replace(Rc::downgrade(&parent));
+	}
+
+	pub fn identity(&self) -> &Identity {
+		todo!()
+	}
+
+	pub fn set_identity(&self, identity: Identity) {
+		todo!()
 	}
 
 	pub fn value(&self) -> &NodeValue {
@@ -55,12 +66,18 @@ mod test {
 			.value()
 			.extract_terminal()
 			.assert_string("hello world");
+
+		fixture.identity().assert_undefined();
 	}
 
 	#[test]
 	fn set_parent() {
 		let fixture = NodeValue::Terminal(TerminalNode::Integer("42".to_string()));
-		let fixture = vec![ArrayElement::new(0, Node::new(fixture))];
+		let mut fixture = vec![ArrayElement::new(0, Node::new(fixture))];
+		for (idx, elem) in fixture.iter_mut().enumerate() {
+			elem.value().set_identity(Identity::from(idx))
+		}
+
 		let fixture = ArrayNode::new(fixture);
 
 		let fixture = NodeValue::Array(fixture);

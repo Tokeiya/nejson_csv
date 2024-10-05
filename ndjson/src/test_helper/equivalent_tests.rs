@@ -23,9 +23,9 @@ pub fn not_equal<T: PartialEq>(x: &T, y: &T) {
 }
 
 #[cfg(test)]
-pub fn equivalent<T: PartialEq>(x: &T, y: &T, z: &T, not_eq: &T) {
-	symmetric(x, y);
-	reflexive(x);
-	transitive(x, y, z);
-	not_equal(x, not_eq);
+pub fn equivalent<T: PartialEq>(x: T, y: T, z: T, not_eq: T) {
+	symmetric(&x, &y);
+	reflexive(&x);
+	transitive(&x, &y, &z);
+	not_equal(&x, &not_eq);
 }
