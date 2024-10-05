@@ -5,7 +5,7 @@ pub type ArrayNode = NonTerminalNode<ArrayElement>;
 pub type ObjectNode = NonTerminalNode<ObjectElement>;
 
 pub enum NonTerminalNodeValue<T> {
-	Empty(String),
+	Empty,
 	Contents(Vec<T>),
 }
 
@@ -20,9 +20,9 @@ impl NonTerminalNode<ArrayElement> {
 		}
 	}
 
-	pub fn empty(white_space: String) -> Self {
+	pub fn empty() -> Self {
 		Self {
-			value: NonTerminalNodeValue::Empty(white_space),
+			value: NonTerminalNodeValue::Empty,
 		}
 	}
 }
@@ -34,9 +34,9 @@ impl NonTerminalNode<ObjectElement> {
 		}
 	}
 
-	pub fn empty(white_space: String) -> Self {
+	pub fn empty() -> Self {
 		Self {
-			value: NonTerminalNodeValue::Empty(white_space),
+			value: NonTerminalNodeValue::Empty,
 		}
 	}
 }
@@ -51,13 +51,10 @@ pub mod test_helper {
 	use super::*;
 
 	impl<T> NonTerminalNodeValue<T> {
-		pub fn assert_empty(&self, expected: &str) {
-			match self {
-				NonTerminalNodeValue::Empty(value) => {
-					assert_eq!(value, expected);
-				}
-				_ => panic!("Expected empty value"),
-			}
+		pub fn assert_empty(&self) {
+			let NonTerminalNodeValue::Empty = self else {
+				unreachable!()
+			};
 		}
 
 		pub fn extract_contents(&self) -> &[T] {
@@ -108,8 +105,8 @@ mod test {
 			.assert_integer("42");
 		contents[1].assert_index(1);
 
-		let node = ArrayNode::empty("space".to_string());
-		node.value.assert_empty("space");
+		let node = ArrayNode::empty();
+		node.value.assert_empty();
 	}
 
 	#[test]
@@ -145,8 +142,8 @@ mod test {
 			.extract_terminal()
 			.assert_float("42.195");
 
-		let node = ObjectNode::empty("space".to_string());
-		node.value.assert_empty("space");
+		let node = ObjectNode::empty();
+		node.value.assert_empty();
 	}
 
 	#[test]

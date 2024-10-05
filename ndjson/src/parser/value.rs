@@ -116,7 +116,7 @@ mod test {
 		let mut parser = super::value::<&str>();
 		let (v, r) = parser.parse("[   ]").unwrap();
 		assert_eq!(r, "");
-		v.value().extract_array().value().assert_empty("   ")
+		v.value().extract_array().value().assert_empty();
 	}
 	#[test]
 	fn array() {

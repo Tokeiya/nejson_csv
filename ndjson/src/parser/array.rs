@@ -13,7 +13,7 @@ fn following<I: Stream<Token = char>>() -> impl Parser<I, Output = Vec<Rc<Node>>
 }
 
 fn contents<I: Stream<Token = char>>() -> impl Parser<I, Output = NodeValue> {
-	let empty = ws::<I>().map(|s| NodeValue::Array(ArrayNode::empty(s)));
+	let empty = ws::<I>().map(|_| NodeValue::Array(ArrayNode::empty()));
 
 	let content = (first::<I>(), following()).map(|(a, b)| {
 		let mut v = Vec::new();
@@ -106,7 +106,7 @@ mod test {
 
 		let (a, r) = parser.parse("   ").unwrap();
 		assert_eq!(r, "");
-		a.extract_array().value().assert_empty("   ");
+		a.extract_array().value().assert_empty();
 	}
 
 	#[test]
@@ -155,13 +155,13 @@ mod test {
 
 		let (act, rem) = parser.parse(&str).unwrap();
 		assert_eq!(rem, "");
-		act.extract_array().value().assert_empty("");
+		act.extract_array().value().assert_empty();
 
 		let str = format!("[{WS}]");
 		let mut parser = super::array::<&str>();
 		let (act, rem) = parser.parse(&str).unwrap();
 		assert_eq!(rem, "");
-		act.extract_array().value().assert_empty(WS);
+		act.extract_array().value().assert_empty();
 	}
 
 	#[test]
