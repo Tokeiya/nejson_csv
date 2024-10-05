@@ -1,7 +1,8 @@
 use super::object_element::ObjectElement;
 use super::prelude::*;
+use std::rc::Rc;
 
-pub type ArrayNode = NonTerminalNode<ArrayElement>;
+pub type ArrayNode = NonTerminalNode<Rc<Node>>;
 pub type ObjectNode = NonTerminalNode<ObjectElement>;
 
 pub enum NonTerminalNodeValue<T> {
@@ -13,8 +14,8 @@ pub struct NonTerminalNode<T> {
 	value: NonTerminalNodeValue<T>,
 }
 
-impl NonTerminalNode<ArrayElement> {
-	pub fn new(value: Vec<ArrayElement>) -> Self {
+impl NonTerminalNode<Rc<Node>> {
+	pub fn new(value: Vec<Rc<Node>>) -> Self {
 		Self {
 			value: NonTerminalNodeValue::Contents(value),
 		}
@@ -72,15 +73,13 @@ mod test {
 
 	fn array_fixture() -> ArrayNode {
 		let arr = vec![
-			ArrayElement::new(
-				0,
-				Node::new(NodeValue::Terminal(TerminalNode::String("foo".to_string()))),
-			),
-			ArrayElement::new(
-				1,
-				Node::new(NodeValue::Terminal(TerminalNode::Integer("42".to_string()))),
-			),
+			Node::new(NodeValue::Terminal(TerminalNode::String("foo".to_string()))),
+			Node::new(NodeValue::Terminal(TerminalNode::Integer("42".to_string()))),
 		];
+
+		for (i, e) in arr.iter().enumerate() {
+			e.set_identity(Identity::from(i))
+		}
 
 		ArrayNode::new(arr)
 	}
@@ -91,19 +90,9 @@ mod test {
 
 		let contents = node.value().extract_contents();
 		assert_eq!(contents.len(), 2);
-		contents[0]
-			.value()
-			.value()
-			.extract_terminal()
-			.assert_string("foo");
-		contents[0].assert_index(0);
+		contents[0].value().extract_terminal().assert_string("foo");
 
-		contents[1]
-			.value()
-			.value()
-			.extract_terminal()
-			.assert_integer("42");
-		contents[1].assert_index(1);
+		contents[1].value().extract_terminal().assert_integer("42");
 
 		let node = ArrayNode::empty();
 		node.value.assert_empty();
@@ -152,19 +141,11 @@ mod test {
 		let array = node.value().extract_contents();
 		assert_eq!(array.len(), 2);
 
-		array[0]
-			.value()
-			.value()
-			.extract_terminal()
-			.assert_string("foo");
-		array[0].assert_index(0);
+		array[0].value().extract_terminal().assert_string("foo");
+		array[0].identity().assert_index(0);
 
-		array[1]
-			.value()
-			.value()
-			.extract_terminal()
-			.assert_integer("42");
-		array[1].assert_index(1);
+		array[1].value().extract_terminal().assert_integer("42");
+		array[1].identity().assert_index(1);
 
 		let node = ObjectNode::new(vec![
 			ObjectElement::new(

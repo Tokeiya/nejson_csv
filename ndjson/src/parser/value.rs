@@ -24,7 +24,7 @@ fn value_<I: Stream<Token = char>>() -> impl Parser<I, Output = Rc<Node>> {
 		if let NodeValue::Array(arr) = root.value() {
 			if let NonTerminalNodeValue::Contents(arr) = arr.value() {
 				for elem in arr.iter() {
-					elem.value().set_parent(root.clone());
+					elem.set_parent(root.clone());
 				}
 			}
 		} else if let NodeValue::Object(obj) = root.value() {
@@ -128,29 +128,17 @@ mod test {
 		let arr = a.value().extract_array().value().extract_contents();
 
 		assert_eq!(arr.len(), 3);
-		arr[0]
-			.value()
-			.value()
-			.extract_terminal()
-			.assert_integer("1");
+		arr[0].value().extract_terminal().assert_integer("1");
 
-		arr[0].value().identity().assert_index(0);
+		arr[0].identity().assert_index(0);
 
-		arr[1]
-			.value()
-			.value()
-			.extract_terminal()
-			.assert_integer("2");
+		arr[1].value().extract_terminal().assert_integer("2");
 
-		arr[1].value().identity().assert_index(1);
+		arr[1].identity().assert_index(1);
 
-		arr[2]
-			.value()
-			.value()
-			.extract_terminal()
-			.assert_integer("3");
+		arr[2].value().extract_terminal().assert_integer("3");
 
-		arr[2].value().identity().assert_index(2);
+		arr[2].identity().assert_index(2);
 	}
 
 	#[test]
@@ -247,7 +235,7 @@ mod test {
 		if let NodeValue::Array(arr) = root.value() {
 			if let NonTerminalNodeValue::Contents(arr) = arr.value() {
 				for elem in arr.iter() {
-					let c = Rc::as_ptr(&elem.value().parent().unwrap());
+					let c = Rc::as_ptr(&elem.parent().unwrap());
 					let r = Rc::as_ptr(&root);
 					assert!(eq(r, c));
 				}

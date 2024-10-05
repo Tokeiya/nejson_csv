@@ -74,9 +74,9 @@ mod test {
 	#[test]
 	fn set_parent() {
 		let fixture = NodeValue::Terminal(TerminalNode::Integer("42".to_string()));
-		let mut fixture = vec![ArrayElement::new(0, Node::new(fixture))];
+		let mut fixture = vec![Node::new(fixture)];
 		for (idx, elem) in fixture.iter_mut().enumerate() {
-			elem.value().set_identity(Identity::from(idx))
+			elem.set_identity(Identity::from(idx))
 		}
 
 		let fixture = ArrayNode::new(fixture);
@@ -87,8 +87,7 @@ mod test {
 		if let NodeValue::Array(vec) = fixture.value() {
 			if let NonTerminalNodeValue::Contents(vec) = vec.value() {
 				for elem in vec.iter() {
-					let value = elem.value();
-					value.set_parent(fixture.clone());
+					elem.set_parent(fixture.clone());
 				}
 			}
 		}
@@ -98,7 +97,7 @@ mod test {
 		if let NodeValue::Array(vec) = fixture.value() {
 			if let NonTerminalNodeValue::Contents(vec) = vec.value() {
 				for elem in vec.iter() {
-					let p = elem.value().parent().unwrap();
+					let p = elem.parent().unwrap();
 					assert!(Rc::ptr_eq(&fixture, &p));
 				}
 			}
