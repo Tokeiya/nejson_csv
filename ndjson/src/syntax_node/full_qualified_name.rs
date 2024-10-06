@@ -1,6 +1,7 @@
 use super::identity::Identity;
+use std::collections::VecDeque;
 use std::fmt::{Debug, Display, Formatter};
-pub struct FullQualifiedName(Vec<Identity>);
+pub struct FullQualifiedName(VecDeque<Identity>);
 
 impl FullQualifiedName {
 	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
@@ -16,13 +17,13 @@ impl FullQualifiedName {
 		Ok(())
 	}
 
-	pub fn elements(&self) -> &[Identity] {
-		&self.0
+	pub fn elements(&self) -> (&[Identity], &[Identity]) {
+		self.0.as_slices()
 	}
 }
 
-impl From<Vec<Identity>> for FullQualifiedName {
-	fn from(value: Vec<Identity>) -> Self {
+impl From<VecDeque<Identity>> for FullQualifiedName {
+	fn from(value: VecDeque<Identity>) -> Self {
 		FullQualifiedName(value)
 	}
 }
@@ -64,24 +65,24 @@ mod tests {
 	use crate::test_helper::test_prelude::*;
 
 	fn generate() -> FullQualifiedName {
-		let mut vec = Vec::new();
-		vec.push(Identity::Root);
-		vec.push(Identity::Key("foo".to_string()));
-		vec.push(Identity::Key("bar".to_string()));
-		vec.push(Identity::Index(42));
-		vec.push(Identity::Index(43));
+		let mut vec = VecDeque::new();
+		vec.push_back(Identity::Root);
+		vec.push_back(Identity::Key("foo".to_string()));
+		vec.push_back(Identity::Key("bar".to_string()));
+		vec.push_back(Identity::Index(42));
+		vec.push_back(Identity::Index(43));
 
 		FullQualifiedName(vec)
 	}
 
 	#[test]
 	fn from() {
-		let mut vec = Vec::new();
-		vec.push(Identity::Root);
-		vec.push(Identity::Key("foo".to_string()));
-		vec.push(Identity::Key("bar".to_string()));
-		vec.push(Identity::Index(42));
-		vec.push(Identity::Index(43));
+		let mut vec = VecDeque::new();
+		vec.push_back(Identity::Root);
+		vec.push_back(Identity::Key("foo".to_string()));
+		vec.push_back(Identity::Key("bar".to_string()));
+		vec.push_back(Identity::Index(42));
+		vec.push_back(Identity::Index(43));
 
 		let fixture = FullQualifiedName::from(vec);
 		assert_eq!(fixture.0.len(), 5);
@@ -111,12 +112,22 @@ mod tests {
 	#[test]
 	fn elements() {
 		let act = generate();
-		let slice = act.elements();
+		let (f, l) = act.elements();
 		let expected = generate();
 
-		assert_eq!(slice.len(), expected.0.len());
+		assert_eq!((f.len() + l.len()), expected.0.len());
 
-		for (a, e) in slice.iter().zip(expected.0.iter()) {
+		let mut vec = Vec::new();
+
+		for elem in f {
+			vec.push(elem)
+		}
+
+		for elem in l {
+			vec.push(elem)
+		}
+
+		for (a, e) in vec.into_iter().zip(expected.0.iter()) {
 			assert_eq!(a, e)
 		}
 	}
