@@ -1,5 +1,6 @@
 use super::identity::Identity;
 use super::node_value::NodeValue;
+use super::prelude::*;
 use std::cell::{Ref, RefCell};
 use std::rc::{Rc, Weak};
 
@@ -36,6 +37,10 @@ impl Node {
 
 	pub fn value(&self) -> &NodeValue {
 		&self.value
+	}
+
+	pub fn full_qualified_name(&self) -> FullQualifiedName {
+		todo!()
 	}
 }
 
@@ -113,5 +118,10 @@ mod test {
 		fixture.set_identity(identity);
 
 		fixture.identity().assert_index(42);
+	}
+
+	#[test]
+	fn full_qualified_name() {
+		todo!()
 	}
 }
