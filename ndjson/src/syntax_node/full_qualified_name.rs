@@ -1,42 +1,20 @@
 use super::identity::Identity;
-use std::collections::VecDeque;
-use std::fmt::{Debug, Display, Formatter};
+use std::collections::{vec_deque::Iter as VecDequeIter, VecDeque};
 pub struct FullQualifiedName(VecDeque<Identity>);
 
 impl FullQualifiedName {
-	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-		for elem in self.0.iter() {
-			match elem {
-				Identity::Key(k) => f.write_fmt(format_args!("{k}::"))?,
-				Identity::Index(i) => f.write_fmt(format_args!("[{i}]"))?,
-				Identity::Root => f.write_str("Root::")?,
-				Identity::Undefined => f.write_str("Undefined::")?,
-			}
-		}
-
-		Ok(())
-	}
-
 	pub fn elements(&self) -> (&[Identity], &[Identity]) {
 		self.0.as_slices()
+	}
+
+	pub fn iter(&self) -> VecDequeIter<Identity> {
+		self.0.iter()
 	}
 }
 
 impl From<VecDeque<Identity>> for FullQualifiedName {
 	fn from(value: VecDeque<Identity>) -> Self {
 		FullQualifiedName(value)
-	}
-}
-
-impl Debug for FullQualifiedName {
-	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-		self.fmt(f)
-	}
-}
-
-impl Display for FullQualifiedName {
-	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-		self.fmt(f)
 	}
 }
 
@@ -51,7 +29,6 @@ impl PartialEq for FullQualifiedName {
 		} else {
 			return false;
 		}
-
 		true
 	}
 }
@@ -76,6 +53,28 @@ mod tests {
 	}
 
 	#[test]
+	fn iter() {
+		let expected = generate();
+		let (f, l) = expected.elements();
+		let mut vec = Vec::new();
+
+		for elem in f.iter() {
+			vec.push(elem);
+		}
+
+		for elem in l.iter() {
+			vec.push(elem);
+		}
+
+		let fixture = generate();
+		assert_eq!(fixture.0.len(), fixture.iter().len());
+
+		for (e, a) in vec.into_iter().zip(fixture.iter()) {
+			assert_eq!(a, e)
+		}
+	}
+
+	#[test]
 	fn from() {
 		let mut vec = VecDeque::new();
 		vec.push_back(Identity::Root);
@@ -90,15 +89,6 @@ mod tests {
 		for (a, e) in fixture.0.iter().zip(generate().0.iter()) {
 			assert_eq!(a, e);
 		}
-	}
-	#[test]
-	fn debug() {
-		assert_eq!(format!("{:?}", generate()), "Root::foo::bar::[42][43]");
-	}
-
-	#[test]
-	fn display() {
-		assert_eq!(format!("{}", generate()), "Root::foo::bar::[42][43]");
 	}
 
 	#[test]
