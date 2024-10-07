@@ -42,6 +42,10 @@ impl Node {
 	pub fn full_qualified_name(&self) -> FullQualifiedName {
 		todo!()
 	}
+
+	fn collect_full_qualified_name(&self, vec: &mut Vec<Identity>) {
+		todo!()
+	}
 }
 
 #[cfg(test)]
@@ -84,7 +88,7 @@ mod test {
 			elem.set_identity(Identity::from(idx))
 		}
 
-		let fixture = ArrayNode::new(fixture);
+		let fixture = NonTerminalNode::new(fixture);
 
 		let fixture = NodeValue::Array(fixture);
 		let fixture = Node::new(fixture);

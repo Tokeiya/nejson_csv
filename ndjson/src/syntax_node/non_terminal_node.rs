@@ -1,9 +1,6 @@
 use super::prelude::*;
 use std::rc::Rc;
 
-pub type ArrayNode = NonTerminalNode;
-pub type ObjectNode = NonTerminalNode;
-
 pub enum NonTerminalNodeValue {
 	Empty,
 	Contents(Vec<Rc<Node>>),
@@ -56,7 +53,7 @@ mod test {
 	use super::super::node_value::NodeValue;
 	use super::*;
 
-	fn array_fixture() -> ArrayNode {
+	fn array_fixture() -> NonTerminalNode {
 		let arr = vec![
 			Node::new(NodeValue::Terminal(TerminalNode::String("foo".to_string()))),
 			Node::new(NodeValue::Terminal(TerminalNode::Integer("42".to_string()))),
@@ -66,7 +63,7 @@ mod test {
 			e.set_identity(Identity::from(i))
 		}
 
-		ArrayNode::new(arr)
+		NonTerminalNode::new(arr)
 	}
 
 	#[test]
@@ -79,7 +76,7 @@ mod test {
 
 		contents[1].value().extract_terminal().assert_integer("42");
 
-		let node = ArrayNode::empty();
+		let node = NonTerminalNode::empty();
 		node.value.assert_empty();
 	}
 
@@ -94,7 +91,7 @@ mod test {
 		vec[0].set_identity(Identity::from("foo"));
 		vec[1].set_identity(Identity::from("bar"));
 
-		ObjectNode::new(vec)
+		NonTerminalNode::new(vec)
 	}
 
 	#[test]
@@ -113,7 +110,7 @@ mod test {
 			.extract_terminal()
 			.assert_float("42.195");
 
-		let node = ObjectNode::empty();
+		let node = NonTerminalNode::empty();
 		node.value.assert_empty();
 	}
 

@@ -35,13 +35,13 @@ fn following<I: Stream<Token = char>>() -> impl Parser<I, Output = Vec<Rc<Node>>
 }
 
 fn contents<I: Stream<Token = char>>() -> impl Parser<I, Output = NodeValue> {
-	let empty = ws::<I>().map(|_| NodeValue::Object(ObjectNode::empty()));
+	let empty = ws::<I>().map(|_| NodeValue::Object(NonTerminalNode::empty()));
 
 	let contents = (first::<I>(), following()).map(|(a, b)| {
 		let mut v = b;
 		v.insert(0, a);
 
-		NodeValue::Object(ObjectNode::new(v))
+		NodeValue::Object(NonTerminalNode::new(v))
 	});
 
 	cmb::attempt(contents).or(empty)
