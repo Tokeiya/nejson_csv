@@ -40,11 +40,17 @@ impl Node {
 	}
 
 	pub fn full_qualified_name(&self) -> FullQualifiedName {
-		todo!()
+		let mut vec = Vec::new();
+		self.collect_full_qualified_name(&mut vec);
+		FullQualifiedName::from(vec)
 	}
 
 	fn collect_full_qualified_name(&self, vec: &mut Vec<Identity>) {
-		todo!()
+		if let Some(p) = self.parent() {
+			p.collect_full_qualified_name(vec);
+		}
+
+		vec.push(self.identity().clone());
 	}
 }
 
@@ -60,8 +66,6 @@ pub mod test_helper {
 #[cfg(test)]
 mod test {
 	use super::*;
-	use crate::syntax_node::prelude::*;
-
 	#[test]
 	fn new() {
 		let v = NodeValue::Terminal(TerminalNode::String("hello world".to_string()));
@@ -126,6 +130,56 @@ mod test {
 
 	#[test]
 	fn full_qualified_name() {
-		todo!()
+		let val = Node::new(NodeValue::Terminal(TerminalNode::Integer("42".to_string())));
+		let obj = Node::new(NodeValue::Object(NonTerminalNode::new(vec![val.clone()])));
+
+		for elem in obj
+			.value()
+			.extract_object()
+			.value()
+			.extract_contents()
+			.iter()
+		{
+			elem.set_parent(obj.clone());
+			elem.set_identity(Identity::Key("value".to_string()));
+		}
+
+		let arr = Node::new(NodeValue::Array(NonTerminalNode::new(vec![obj.clone()])));
+
+		for elem in arr
+			.value()
+			.extract_array()
+			.value()
+			.extract_contents()
+			.iter()
+		{
+			elem.set_parent(arr.clone());
+			elem.set_identity(Identity::Index(0));
+		}
+
+		let root = Node::new(NodeValue::Object(NonTerminalNode::new(vec![arr.clone()])));
+
+		for elem in root
+			.value()
+			.extract_object()
+			.value()
+			.extract_contents()
+			.iter()
+		{
+			elem.set_identity(Identity::from("arr"));
+			elem.set_parent(root.clone());
+		}
+
+		root.set_identity(Identity::Root);
+
+		let actual = val.full_qualified_name();
+		assert_eq!(4, actual.elements().len());
+
+		let actual = actual.elements();
+
+		assert_eq!(Identity::Root, actual[0]);
+		assert_eq!(Identity::Key("arr".to_string()), actual[1]);
+		assert_eq!(Identity::Index(0), actual[2]);
+		assert_eq!(Identity::Key("value".to_string()), actual[3]);
 	}
 }

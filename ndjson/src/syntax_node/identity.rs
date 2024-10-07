@@ -1,4 +1,4 @@
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub enum Identity {
 	Key(String),
 	Index(usize),
@@ -88,5 +88,14 @@ mod test {
 			Identity::Root,
 			Identity::Key("key".to_string()),
 		);
+	}
+
+	#[test]
+	fn clone() {
+		let a = Identity::from("key");
+		let b = a.clone();
+
+		assert_eq!(&a, &b);
+		assert_ne!(&a as *const Identity, &b as *const Identity);
 	}
 }
