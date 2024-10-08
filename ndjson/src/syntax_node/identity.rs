@@ -68,6 +68,16 @@ mod test {
 	}
 
 	#[test]
+	fn debug() {
+		let fixture = Identity::from("key");
+		assert_eq!(format!("{:?}", fixture), r#"Key("key")"#);
+
+		let fixture = Identity::from(42);
+		assert_eq!(format!("{:?}", fixture), r#"Index(42)"#);
+		println!("{:?}", &fixture);
+	}
+
+	#[test]
 	fn eq() {
 		let x = Identity::from("key");
 		let y = Identity::from("key");

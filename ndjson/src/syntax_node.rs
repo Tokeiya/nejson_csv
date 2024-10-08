@@ -1,4 +1,6 @@
+mod breadth_first_iterator;
 mod char_continuous_counter;
+mod depth_first_iterator;
 mod full_qualified_name;
 mod identity;
 mod node;

@@ -1,3 +1,4 @@
+use super::char_continuous_counter::CharContinuousCounter;
 use super::identity::Identity;
 use std::slice::Iter;
 pub struct FullQualifiedName(Vec<Identity>);
@@ -9,6 +10,58 @@ impl FullQualifiedName {
 
 	pub fn iter(&self) -> Iter<Identity> {
 		self.0.iter()
+	}
+
+	pub fn text_expression(&self) -> String {
+		let mut colon = CharContinuousCounter::<':'>::new();
+		let mut left = CharContinuousCounter::<'['>::new();
+		let mut right = CharContinuousCounter::<']'>::new();
+
+		for elem in self.0.iter().filter(|x| matches!(x, Identity::Key(_))) {
+			let Identity::Key(k) = elem else {
+				unreachable!()
+			};
+
+			dbg!(k);
+			for c in k.chars() {
+				colon.input(c);
+				left.input(c);
+				right.input(c);
+			}
+		}
+
+		let coron = colon.max() + 1;
+		let bracket = std::cmp::max(left.max(), right.max()) + 1;
+
+		let coron = ":".repeat(coron);
+		let left = "[".repeat(bracket);
+		let right = "]".repeat(bracket);
+
+		let mut buff = String::new();
+
+		for elem in self.0.iter() {
+			match elem {
+				Identity::Key(key) => {
+					buff.push_str(key);
+					buff.push_str(&coron);
+				}
+				Identity::Index(idx) => {
+					buff.push_str(&left);
+					buff.push_str(&idx.to_string());
+					buff.push_str(&right);
+				}
+				Identity::Root => {
+					buff.push_str("Root");
+					buff.push_str(&coron);
+				}
+				Identity::Undefined => {
+					buff.push_str("Undefined");
+					buff.push_str(&coron);
+				}
+			}
+		}
+
+		buff
 	}
 }
 
@@ -94,5 +147,17 @@ mod tests {
 		let fixture = generate();
 		let expected = &fixture.0;
 		assert_eq!(expected.as_ptr(), fixture.elements().as_ptr());
+	}
+
+	#[test]
+	fn text_expression() {
+		let vec = vec![Identity::Key("fo::o".to_string()), Identity::Index(42)];
+		let fixture = FullQualifiedName::from(vec);
+
+		assert_eq!(fixture.text_expression(), "fo::o:::[42]");
+
+		let vec = vec![Identity::Key("fo::[o]".to_string()), Identity::Index(42)];
+		let fixture = FullQualifiedName::from(vec);
+		assert_eq!(fixture.text_expression(), "fo::[o]:::[[42]]");
 	}
 }
