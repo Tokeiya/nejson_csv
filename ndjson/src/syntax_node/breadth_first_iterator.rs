@@ -1,8 +1,8 @@
 use super::node::Node;
-use std::collections::vec_deque::VecDeque;
-use std::rc::Rc;
 use crate::syntax_node::node_value::NodeValue;
 use crate::syntax_node::test_prelude::*;
+use std::collections::vec_deque::VecDeque;
+use std::rc::Rc;
 pub struct BreadthFirstIterator(VecDeque<Rc<Node>>);
 
 impl BreadthFirstIterator {
@@ -16,7 +16,7 @@ impl Iterator for BreadthFirstIterator {
 	type Item = Rc<Node>;
 
 	fn next(&mut self) -> Option<Self::Item> {
-		todo!()		
+		todo!()
 	}
 }
 
@@ -39,11 +39,11 @@ mod test {
 	#[test]
 	fn breadth_first_iterator() {
 		let root = node_helper::gen_sample();
-		
-		let mut iter= BreadthFirstIterator::new(root);
+
+		let mut iter = BreadthFirstIterator::new(root);
 
 		for elem in iter {
-			println!("{}",elem.full_qualified_name().text_expression())
+			println!("{}", elem.full_qualified_name().text_expression())
 		}
 	}
 }
