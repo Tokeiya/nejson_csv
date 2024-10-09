@@ -56,10 +56,102 @@ impl Node {
 
 #[cfg(test)]
 pub mod test_helper {
+	use crate::syntax_node::prelude::*;
+	use std::rc::Rc;
+
 	pub const WS: &str = "\u{20}\u{09}\u{0A}\u{0D}";
 
 	pub fn ws() -> String {
 		WS.to_string()
+	}
+
+	pub fn gen_sample() -> Rc<Node> {
+		let a = Node::new(NodeValue::Terminal(TerminalNode::Integer("10".to_string())));
+		a.set_identity(Identity::Key("1_0".to_string()));
+
+		let b = Node::new(NodeValue::Terminal(TerminalNode::Integer("20".to_string())));
+		b.set_identity(Identity::Key("1_1".to_string()));
+
+		let vec = vec![a, b];
+		let obj = Node::new(NodeValue::Object(NonTerminalNode::new(vec)));
+
+		for elem in obj
+			.value()
+			.extract_object()
+			.value()
+			.extract_contents()
+			.iter()
+		{
+			elem.set_parent(obj.clone());
+		}
+
+		let vec = vec![
+			Node::new(NodeValue::Terminal(TerminalNode::Integer("3".to_string()))),
+			Node::new(NodeValue::Terminal(TerminalNode::Integer("4".to_string()))),
+		];
+
+		vec[0].set_identity(Identity::Index(0));
+		vec[1].set_identity(Identity::Index(1));
+
+		let arr = Node::new(NodeValue::Array(NonTerminalNode::new(vec)));
+
+		for elem in arr.value().extract_array().value().extract_contents() {
+			elem.set_parent(arr.clone());
+		}
+
+		let vec = vec![
+			Node::new(NodeValue::Terminal(TerminalNode::Integer("1".to_string()))),
+			Node::new(NodeValue::Terminal(TerminalNode::Integer("2".to_string()))),
+			arr,
+			obj,
+		];
+
+		let arr = Node::new(NodeValue::Array(NonTerminalNode::new(vec)));
+
+		for (idx, elem) in arr
+			.value()
+			.extract_array()
+			.value()
+			.extract_contents()
+			.iter()
+			.enumerate()
+		{
+			elem.set_identity(Identity::Index(idx));
+			elem.set_parent(arr.clone());
+		}
+
+		let a = Node::new(NodeValue::Terminal(TerminalNode::Null()));
+		let b = Node::new(NodeValue::Terminal(TerminalNode::True()));
+
+		a.set_identity(Identity::Key("0_0".to_string()));
+		b.set_identity(Identity::Key("1_1".to_string()));
+
+		let obj = Node::new(NodeValue::Object(NonTerminalNode::new(vec![a, b])));
+
+		for elem in obj.value().extract_object().value().extract_contents() {
+			elem.set_parent(obj.clone());
+		}
+
+		let arr = Node::new(NodeValue::Array(NonTerminalNode::new(vec![obj, arr])));
+
+		for (i, e) in arr
+			.value()
+			.extract_array()
+			.value()
+			.extract_contents()
+			.iter()
+			.enumerate()
+		{
+			e.set_identity(Identity::Index(i));
+			e.set_parent(arr.clone());
+		}
+
+		let root = Node::new(NodeValue::Object(NonTerminalNode::new(vec![arr])));
+		let piv = &root.value().extract_object().value().extract_contents()[0];
+		piv.set_identity(Identity::Key("arr".to_string()));
+		piv.set_parent(root.clone());
+
+		root
 	}
 }
 
