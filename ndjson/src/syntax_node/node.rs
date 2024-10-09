@@ -127,6 +127,7 @@ pub mod test_helper {
 		}
 
 		let root = Node::new(NodeValue::Object(NonTerminalNode::new(vec![arr])));
+		root.set_identity(Identity::Root);
 		let piv = &root.value().extract_object().value()[0];
 		piv.set_identity(Identity::Key("arr".to_string()));
 		piv.set_parent(root.clone());

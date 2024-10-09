@@ -45,6 +45,7 @@ parser! {
 mod test {
 	use super::*;
 	use crate::syntax_node::test_prelude::*;
+	use std::borrow::Borrow;
 	use std::ptr::eq;
 
 	fn add_ws(s: &str) -> String {
@@ -166,15 +167,29 @@ mod test {
 		assert_eq!(r, "");
 
 		let obj = a.value().extract_object().value();
+
 		assert_eq!(obj.len(), 2);
+
+		assert_eq!(
+			obj[0].parent().unwrap().borrow() as *const Node,
+			a.borrow() as *const Node
+		);
+
+		assert_eq!(
+			obj[1].parent().unwrap().borrow() as *const Node,
+			a.borrow() as *const Node
+		);
 
 		let piv = &obj[0];
 
 		let inner = piv.value().extract_object().value();
 		assert_eq!(inner.len(), 1);
+		assert_eq!(
+			piv.borrow() as *const Node,
+			inner[0].parent().unwrap().borrow() as *const Node
+		);
 
 		inner[0].identity().assert_key("o");
-
 		inner[0].value().extract_terminal().assert_integer("10");
 	}
 

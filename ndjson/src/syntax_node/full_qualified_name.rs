@@ -22,7 +22,6 @@ impl FullQualifiedName {
 				unreachable!()
 			};
 
-			dbg!(k);
 			for c in k.chars() {
 				colon.input(c);
 				left.input(c);
@@ -30,7 +29,7 @@ impl FullQualifiedName {
 			}
 		}
 
-		let coron = colon.max() + 1;
+		let coron = std::cmp::max(colon.max() + 1, 2);
 		let bracket = std::cmp::max(left.max(), right.max()) + 1;
 
 		let coron = ":".repeat(coron);
@@ -39,7 +38,7 @@ impl FullQualifiedName {
 
 		let mut buff = String::new();
 
-		for elem in self.0.iter() {
+		for elem in self.0[..self.0.len() - 1].iter() {
 			match elem {
 				Identity::Key(key) => {
 					buff.push_str(key);
@@ -59,6 +58,17 @@ impl FullQualifiedName {
 					buff.push_str(&coron);
 				}
 			}
+		}
+
+		match &self.0[self.0.len() - 1] {
+			Identity::Key(key) => buff.push_str(&key),
+			Identity::Index(idx) => {
+				buff.push_str(&left);
+				buff.push_str(&idx.to_string());
+				buff.push_str(&right);
+			}
+			Identity::Root => buff.push_str("Root"),
+			Identity::Undefined => buff.push_str("Undefined"),
 		}
 
 		buff
@@ -151,6 +161,14 @@ mod tests {
 
 	#[test]
 	fn text_expression() {
+		let vec = vec![
+			Identity::Key("foo".to_string()),
+			Identity::Index(42),
+			Identity::Key("bar".to_string()),
+		];
+		let fixture = FullQualifiedName::from(vec);
+		assert_eq!(fixture.text_expression(), "foo::[42]bar");
+
 		let vec = vec![Identity::Key("fo::o".to_string()), Identity::Index(42)];
 		let fixture = FullQualifiedName::from(vec);
 
