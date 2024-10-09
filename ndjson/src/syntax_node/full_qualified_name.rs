@@ -1,42 +1,73 @@
+use super::char_continuous_counter::CharContinuousCounter;
 use super::identity::Identity;
-use std::collections::VecDeque;
-use std::fmt::{Debug, Display, Formatter};
-pub struct FullQualifiedName(VecDeque<Identity>);
+use std::slice::Iter;
+pub struct FullQualifiedName(Vec<Identity>);
 
 impl FullQualifiedName {
-	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-		for elem in self.0.iter() {
-			match elem {
-				Identity::Key(k) => f.write_fmt(format_args!("{k}::"))?,
-				Identity::Index(i) => f.write_fmt(format_args!("[{i}]"))?,
-				Identity::Root => f.write_str("Root::")?,
-				Identity::Undefined => f.write_str("Undefined::")?,
+	pub fn elements(&self) -> &[Identity] {
+		&self.0
+	}
+
+	pub fn iter(&self) -> Iter<Identity> {
+		self.0.iter()
+	}
+
+	pub fn text_expression(&self) -> String {
+		let mut colon = CharContinuousCounter::<':'>::new();
+		let mut left = CharContinuousCounter::<'['>::new();
+		let mut right = CharContinuousCounter::<']'>::new();
+
+		for elem in self.0.iter().filter(|x| matches!(x, Identity::Key(_))) {
+			let Identity::Key(k) = elem else {
+				unreachable!()
+			};
+
+			dbg!(k);
+			for c in k.chars() {
+				colon.input(c);
+				left.input(c);
+				right.input(c);
 			}
 		}
 
-		Ok(())
-	}
+		let coron = colon.max() + 1;
+		let bracket = std::cmp::max(left.max(), right.max()) + 1;
 
-	pub fn elements(&self) -> (&[Identity], &[Identity]) {
-		self.0.as_slices()
+		let coron = ":".repeat(coron);
+		let left = "[".repeat(bracket);
+		let right = "]".repeat(bracket);
+
+		let mut buff = String::new();
+
+		for elem in self.0.iter() {
+			match elem {
+				Identity::Key(key) => {
+					buff.push_str(key);
+					buff.push_str(&coron);
+				}
+				Identity::Index(idx) => {
+					buff.push_str(&left);
+					buff.push_str(&idx.to_string());
+					buff.push_str(&right);
+				}
+				Identity::Root => {
+					buff.push_str("Root");
+					buff.push_str(&coron);
+				}
+				Identity::Undefined => {
+					buff.push_str("Undefined");
+					buff.push_str(&coron);
+				}
+			}
+		}
+
+		buff
 	}
 }
 
-impl From<VecDeque<Identity>> for FullQualifiedName {
-	fn from(value: VecDeque<Identity>) -> Self {
+impl From<Vec<Identity>> for FullQualifiedName {
+	fn from(value: Vec<Identity>) -> Self {
 		FullQualifiedName(value)
-	}
-}
-
-impl Debug for FullQualifiedName {
-	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-		self.fmt(f)
-	}
-}
-
-impl Display for FullQualifiedName {
-	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-		self.fmt(f)
 	}
 }
 
@@ -51,7 +82,6 @@ impl PartialEq for FullQualifiedName {
 		} else {
 			return false;
 		}
-
 		true
 	}
 }
@@ -65,45 +95,43 @@ mod tests {
 	use crate::test_helper::test_prelude::*;
 
 	fn generate() -> FullQualifiedName {
-		let mut vec = VecDeque::new();
-		vec.push_back(Identity::Root);
-		vec.push_back(Identity::Key("foo".to_string()));
-		vec.push_back(Identity::Key("bar".to_string()));
-		vec.push_back(Identity::Index(42));
-		vec.push_back(Identity::Index(43));
-		vec.push_back(Identity::Key("hoge".to_string()));
+		let mut vec = Vec::new();
+		vec.push(Identity::Root);
+		vec.push(Identity::Key("foo".to_string()));
+		vec.push(Identity::Key("bar".to_string()));
+		vec.push(Identity::Index(42));
+		vec.push(Identity::Index(43));
 
 		FullQualifiedName(vec)
 	}
 
 	#[test]
 	fn from() {
-		let mut vec = VecDeque::new();
-		vec.push_back(Identity::Root);
-		vec.push_back(Identity::Key("foo".to_string()));
-		vec.push_back(Identity::Key("bar".to_string()));
-		vec.push_back(Identity::Index(42));
-		vec.push_back(Identity::Index(43));
-		vec.push_back(Identity::Key("hoge".to_string()));
+		let mut vec = Vec::new();
+		vec.push(Identity::Root);
+		vec.push(Identity::Key("foo".to_string()));
+		vec.push(Identity::Key("bar".to_string()));
+		vec.push(Identity::Index(42));
+		vec.push(Identity::Index(43));
 
 		let fixture = FullQualifiedName::from(vec);
-		assert_eq!(fixture.0.len(), 6);
+		assert_eq!(fixture.0.len(), 5);
 
 		for (a, e) in fixture.0.iter().zip(generate().0.iter()) {
 			assert_eq!(a, e);
 		}
 	}
-	#[test]
-	fn debug() {
-		assert_eq!(
-			format!("{:?}", generate()),
-			"Root::foo::bar::[42][43]hoge::"
-		);
-	}
 
 	#[test]
-	fn display() {
-		assert_eq!(format!("{}", generate()), "Root::foo::bar::[42][43]hoge::");
+	fn iter() {
+		let fixture = generate();
+		assert_eq!(fixture.0.len(), fixture.iter().len());
+
+		let expected: &[Identity] = &fixture.0;
+
+		for (e, a) in expected.into_iter().zip(fixture.iter()) {
+			assert_eq!(a as *const Identity, e as *const Identity);
+		}
 	}
 
 	#[test]
@@ -116,24 +144,20 @@ mod tests {
 
 	#[test]
 	fn elements() {
-		let act = generate();
-		let (f, l) = act.elements();
-		let expected = generate();
+		let fixture = generate();
+		let expected = &fixture.0;
+		assert_eq!(expected.as_ptr(), fixture.elements().as_ptr());
+	}
 
-		assert_eq!((f.len() + l.len()), expected.0.len());
+	#[test]
+	fn text_expression() {
+		let vec = vec![Identity::Key("fo::o".to_string()), Identity::Index(42)];
+		let fixture = FullQualifiedName::from(vec);
 
-		let mut vec = Vec::new();
+		assert_eq!(fixture.text_expression(), "fo::o:::[42]");
 
-		for elem in f {
-			vec.push(elem)
-		}
-
-		for elem in l {
-			vec.push(elem)
-		}
-
-		for (a, e) in vec.into_iter().zip(expected.0.iter()) {
-			assert_eq!(a, e)
-		}
+		let vec = vec![Identity::Key("fo::[o]".to_string()), Identity::Index(42)];
+		let fixture = FullQualifiedName::from(vec);
+		assert_eq!(fixture.text_expression(), "fo::[o]:::[[42]]");
 	}
 }
