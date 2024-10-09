@@ -56,7 +56,6 @@ pub mod test_helper {
 #[cfg(test)]
 mod test {
 	use super::*;
-	use crate::syntax_node::prelude::*;
 
 	#[test]
 	fn new() {

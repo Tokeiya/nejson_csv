@@ -71,6 +71,7 @@ mod tests {
 		vec.push_back(Identity::Key("bar".to_string()));
 		vec.push_back(Identity::Index(42));
 		vec.push_back(Identity::Index(43));
+		vec.push_back(Identity::Key("hoge".to_string()));
 
 		FullQualifiedName(vec)
 	}
@@ -83,9 +84,10 @@ mod tests {
 		vec.push_back(Identity::Key("bar".to_string()));
 		vec.push_back(Identity::Index(42));
 		vec.push_back(Identity::Index(43));
+		vec.push_back(Identity::Key("hoge".to_string()));
 
 		let fixture = FullQualifiedName::from(vec);
-		assert_eq!(fixture.0.len(), 5);
+		assert_eq!(fixture.0.len(), 6);
 
 		for (a, e) in fixture.0.iter().zip(generate().0.iter()) {
 			assert_eq!(a, e);
@@ -93,12 +95,15 @@ mod tests {
 	}
 	#[test]
 	fn debug() {
-		assert_eq!(format!("{:?}", generate()), "Root::foo::bar::[42][43]");
+		assert_eq!(
+			format!("{:?}", generate()),
+			"Root::foo::bar::[42][43]hoge::"
+		);
 	}
 
 	#[test]
 	fn display() {
-		assert_eq!(format!("{}", generate()), "Root::foo::bar::[42][43]");
+		assert_eq!(format!("{}", generate()), "Root::foo::bar::[42][43]hoge::");
 	}
 
 	#[test]
