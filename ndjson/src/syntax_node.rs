@@ -10,6 +10,7 @@ mod object_identity;
 mod terminal_node;
 
 pub mod prelude {
+	pub use super::breadth_first_iterator::BreadthFirstIterator;
 	pub use super::char_continuous_counter::CharContinuousCounter;
 	pub use super::full_qualified_name::FullQualifiedName;
 	pub use super::identity::Identity;
