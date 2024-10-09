@@ -37,7 +37,6 @@ pub mod test_helper {
 	impl StringParseError {
 		pub fn assert_invalid_surrogate(&self, first: &str, second: &str) {
 			dbg!(self);
-
 			dbg!(first, second);
 
 			match self {

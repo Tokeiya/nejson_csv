@@ -75,13 +75,7 @@ pub mod test_helper {
 		let vec = vec![a, b];
 		let obj = Node::new(NodeValue::Object(NonTerminalNode::new(vec)));
 
-		for elem in obj
-			.value()
-			.extract_object()
-			.value()
-			.extract_contents()
-			.iter()
-		{
+		for elem in obj.value().extract_object().value().iter() {
 			elem.set_parent(obj.clone());
 		}
 
@@ -95,7 +89,7 @@ pub mod test_helper {
 
 		let arr = Node::new(NodeValue::Array(NonTerminalNode::new(vec)));
 
-		for elem in arr.value().extract_array().value().extract_contents() {
+		for elem in arr.value().extract_array().value() {
 			elem.set_parent(arr.clone());
 		}
 
@@ -108,14 +102,7 @@ pub mod test_helper {
 
 		let arr = Node::new(NodeValue::Array(NonTerminalNode::new(vec)));
 
-		for (idx, elem) in arr
-			.value()
-			.extract_array()
-			.value()
-			.extract_contents()
-			.iter()
-			.enumerate()
-		{
+		for (idx, elem) in arr.value().extract_array().value().iter().enumerate() {
 			elem.set_identity(Identity::Index(idx));
 			elem.set_parent(arr.clone());
 		}
@@ -128,26 +115,19 @@ pub mod test_helper {
 
 		let obj = Node::new(NodeValue::Object(NonTerminalNode::new(vec![a, b])));
 
-		for elem in obj.value().extract_object().value().extract_contents() {
+		for elem in obj.value().extract_object().value() {
 			elem.set_parent(obj.clone());
 		}
 
 		let arr = Node::new(NodeValue::Array(NonTerminalNode::new(vec![obj, arr])));
 
-		for (i, e) in arr
-			.value()
-			.extract_array()
-			.value()
-			.extract_contents()
-			.iter()
-			.enumerate()
-		{
+		for (i, e) in arr.value().extract_array().value().iter().enumerate() {
 			e.set_identity(Identity::Index(i));
 			e.set_parent(arr.clone());
 		}
 
 		let root = Node::new(NodeValue::Object(NonTerminalNode::new(vec![arr])));
-		let piv = &root.value().extract_object().value().extract_contents()[0];
+		let piv = &root.value().extract_object().value()[0];
 		piv.set_identity(Identity::Key("arr".to_string()));
 		piv.set_parent(root.clone());
 
@@ -190,21 +170,17 @@ mod test {
 		let fixture = Node::new(fixture);
 
 		if let NodeValue::Array(vec) = fixture.value() {
-			if let NonTerminalNodeValue::Contents(vec) = vec.value() {
-				for elem in vec.iter() {
-					elem.set_parent(fixture.clone());
-				}
+			for elem in vec.value().iter() {
+				elem.set_parent(fixture.clone());
 			}
 		}
 
 		assert!(fixture.parent().is_none());
 
 		if let NodeValue::Array(vec) = fixture.value() {
-			if let NonTerminalNodeValue::Contents(vec) = vec.value() {
-				for elem in vec.iter() {
-					let p = elem.parent().unwrap();
-					assert!(Rc::ptr_eq(&fixture, &p));
-				}
+			for elem in vec.value().iter() {
+				let p = elem.parent().unwrap();
+				assert!(Rc::ptr_eq(&fixture, &p));
 			}
 		}
 	}
@@ -225,39 +201,21 @@ mod test {
 		let val = Node::new(NodeValue::Terminal(TerminalNode::Integer("42".to_string())));
 		let obj = Node::new(NodeValue::Object(NonTerminalNode::new(vec![val.clone()])));
 
-		for elem in obj
-			.value()
-			.extract_object()
-			.value()
-			.extract_contents()
-			.iter()
-		{
+		for elem in obj.value().extract_object().value().iter() {
 			elem.set_parent(obj.clone());
 			elem.set_identity(Identity::Key("value".to_string()));
 		}
 
 		let arr = Node::new(NodeValue::Array(NonTerminalNode::new(vec![obj.clone()])));
 
-		for elem in arr
-			.value()
-			.extract_array()
-			.value()
-			.extract_contents()
-			.iter()
-		{
+		for elem in arr.value().extract_array().value().iter() {
 			elem.set_parent(arr.clone());
 			elem.set_identity(Identity::Index(0));
 		}
 
 		let root = Node::new(NodeValue::Object(NonTerminalNode::new(vec![arr.clone()])));
 
-		for elem in root
-			.value()
-			.extract_object()
-			.value()
-			.extract_contents()
-			.iter()
-		{
+		for elem in root.value().extract_object().value().iter() {
 			elem.set_identity(Identity::from("arr"));
 			elem.set_parent(root.clone());
 		}
