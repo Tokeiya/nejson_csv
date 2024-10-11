@@ -1,9 +1,9 @@
-use super::non_terminal_node::{ArrayNode, ObjectNode};
+use super::non_terminal_node::NonTerminalNode;
 use super::terminal_node::TerminalNode;
 pub enum NodeValue {
 	Terminal(TerminalNode),
-	Array(ArrayNode),
-	Object(ObjectNode),
+	Array(NonTerminalNode),
+	Object(NonTerminalNode),
 }
 
 #[cfg(test)]
@@ -18,14 +18,14 @@ pub mod test_helper {
 			}
 		}
 
-		pub fn extract_array(&self) -> &ArrayNode {
+		pub fn extract_array(&self) -> &NonTerminalNode {
 			match self {
 				NodeValue::Array(value) => value,
 				_ => panic!("Expected array"),
 			}
 		}
 
-		pub fn extract_object(&self) -> &ObjectNode {
+		pub fn extract_object(&self) -> &NonTerminalNode {
 			match self {
 				NodeValue::Object(value) => value,
 				_ => panic!("Expected object"),

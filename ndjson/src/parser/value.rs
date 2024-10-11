@@ -22,16 +22,12 @@ fn value_<I: Stream<Token = char>>() -> impl Parser<I, Output = Rc<Node>> {
 		let root = Node::new(v);
 
 		if let NodeValue::Array(arr) = root.value() {
-			if let NonTerminalNodeValue::Contents(arr) = arr.value() {
-				for elem in arr.iter() {
-					elem.set_parent(root.clone());
-				}
+			for elem in arr.value().iter() {
+				elem.set_parent(root.clone());
 			}
 		} else if let NodeValue::Object(obj) = root.value() {
-			if let NonTerminalNodeValue::Contents(obj) = obj.value() {
-				for elem in obj.iter() {
-					elem.set_parent(root.clone());
-				}
+			for elem in obj.value().iter() {
+				elem.set_parent(root.clone());
 			}
 		}
 
@@ -49,6 +45,7 @@ parser! {
 mod test {
 	use super::*;
 	use crate::syntax_node::test_prelude::*;
+	use std::borrow::Borrow;
 	use std::ptr::eq;
 
 	fn add_ws(s: &str) -> String {
@@ -116,7 +113,7 @@ mod test {
 		let mut parser = super::value::<&str>();
 		let (v, r) = parser.parse("[   ]").unwrap();
 		assert_eq!(r, "");
-		v.value().extract_array().value().assert_empty();
+		assert_eq!(v.value().extract_array().value().len(), 0);
 	}
 	#[test]
 	fn array() {
@@ -125,7 +122,7 @@ mod test {
 		let (a, rem) = parser.parse(&str).unwrap();
 		assert_eq!(rem, "");
 		a.identity().assert_undefined();
-		let arr = a.value().extract_array().value().extract_contents();
+		let arr = a.value().extract_array().value();
 
 		assert_eq!(arr.len(), 3);
 		arr[0].value().extract_terminal().assert_integer("1");
@@ -148,7 +145,7 @@ mod test {
 		let (a, rem) = parser.parse(&str).unwrap();
 		a.identity().assert_undefined();
 		assert_eq!(rem, "");
-		let obj = a.value().extract_object().value().extract_contents();
+		let obj = a.value().extract_object().value();
 
 		assert_eq!(obj.len(), 3);
 		obj[0].identity().assert_key("a");
@@ -169,16 +166,30 @@ mod test {
 			.unwrap();
 		assert_eq!(r, "");
 
-		let obj = a.value().extract_object().value().extract_contents();
+		let obj = a.value().extract_object().value();
+
 		assert_eq!(obj.len(), 2);
+
+		assert_eq!(
+			obj[0].parent().unwrap().borrow() as *const Node,
+			a.borrow() as *const Node
+		);
+
+		assert_eq!(
+			obj[1].parent().unwrap().borrow() as *const Node,
+			a.borrow() as *const Node
+		);
 
 		let piv = &obj[0];
 
-		let inner = piv.value().extract_object().value().extract_contents();
+		let inner = piv.value().extract_object().value();
 		assert_eq!(inner.len(), 1);
+		assert_eq!(
+			piv.borrow() as *const Node,
+			inner[0].parent().unwrap().borrow() as *const Node
+		);
 
 		inner[0].identity().assert_key("o");
-
 		inner[0].value().extract_terminal().assert_integer("10");
 	}
 
@@ -209,12 +220,10 @@ mod test {
 		let (root, _) = parser.parse("[1,2]").unwrap();
 
 		if let NodeValue::Array(arr) = root.value() {
-			if let NonTerminalNodeValue::Contents(arr) = arr.value() {
-				for elem in arr.iter() {
-					let c = Rc::as_ptr(&elem.parent().unwrap());
-					let r = Rc::as_ptr(&root);
-					assert!(eq(r, c));
-				}
+			for elem in arr.value().iter() {
+				let c = Rc::as_ptr(&elem.parent().unwrap());
+				let r = Rc::as_ptr(&root);
+				assert!(eq(r, c));
 			}
 		}
 	}

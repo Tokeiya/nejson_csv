@@ -35,13 +35,13 @@ fn following<I: Stream<Token = char>>() -> impl Parser<I, Output = Vec<Rc<Node>>
 }
 
 fn contents<I: Stream<Token = char>>() -> impl Parser<I, Output = NodeValue> {
-	let empty = ws::<I>().map(|_| NodeValue::Object(ObjectNode::empty()));
+	let empty = ws::<I>().map(|_| NodeValue::Object(NonTerminalNode::new(Vec::new())));
 
 	let contents = (first::<I>(), following()).map(|(a, b)| {
 		let mut v = b;
 		v.insert(0, a);
 
-		NodeValue::Object(ObjectNode::new(v))
+		NodeValue::Object(NonTerminalNode::new(v))
 	});
 
 	cmb::attempt(contents).or(empty)
@@ -86,7 +86,7 @@ mod test {
 
 		assert_eq!(r, "");
 
-		let obj = a.extract_object().value().extract_contents();
+		let obj = a.extract_object().value();
 		assert_eq!(obj.len(), 1);
 
 		obj[0].identity().assert_key("foo");
@@ -115,15 +115,15 @@ mod test {
 
 		let (a, r) = parser.parse("").unwrap();
 		assert_eq!(r, "");
-		a.extract_object().value().assert_empty();
+		assert_eq!(0, a.extract_object().value().len());
 
 		let (a, r) = parser.parse("   ").unwrap();
 		assert_eq!(r, "");
-		a.extract_object().value().assert_empty();
+		assert_eq!(0, a.extract_object().value().len());
 
 		let (a, r) = parser.parse(r#"          "key" :null"#).unwrap();
 		assert_eq!(r, "");
-		let a = a.extract_object().value().extract_contents();
+		let a = a.extract_object().value();
 		assert_eq!(a.len(), 1);
 
 		let piv = &a[0];
@@ -132,7 +132,7 @@ mod test {
 
 		let (a, r) = parser.parse(r#""key":null,"t":true,"f":false"#).unwrap();
 		assert_eq!(r, "");
-		let a = a.extract_object().value().extract_contents();
+		let a = a.extract_object().value();
 		assert_eq!(a.len(), 3);
 
 		let piv = &a[0];
@@ -160,7 +160,7 @@ mod test {
 
 		let (act, rem) = parser.parse(&str).unwrap();
 		assert_eq!(rem, "");
-		let contents = act.extract_object().value().extract_contents();
+		let contents = act.extract_object().value();
 
 		assert_eq!(contents.len(), 6);
 
@@ -211,13 +211,13 @@ mod test {
 
 		let (act, rem) = parser.parse(&str).unwrap();
 		assert_eq!(rem, "");
-		act.extract_object().value().assert_empty();
+		assert_eq!(act.extract_object().value().len(), 0);
 
 		let str = format!("{{{WS}}}");
 		let mut parser = super::object::<&str>();
 		let (act, rem) = parser.parse(&str).unwrap();
 		assert_eq!(rem, "");
-		act.extract_object().value().assert_empty();
+		assert_eq!(act.extract_object().value().len(), 0);
 	}
 
 	#[test]

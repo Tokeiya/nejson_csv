@@ -13,7 +13,7 @@ fn following<I: Stream<Token = char>>() -> impl Parser<I, Output = Vec<Rc<Node>>
 }
 
 fn contents<I: Stream<Token = char>>() -> impl Parser<I, Output = NodeValue> {
-	let empty = ws::<I>().map(|_| NodeValue::Array(ArrayNode::empty()));
+	let empty = ws::<I>().map(|_| NodeValue::Array(NonTerminalNode::new(Vec::new())));
 
 	let content = (first::<I>(), following()).map(|(a, b)| {
 		let mut vec = b;
@@ -23,7 +23,7 @@ fn contents<I: Stream<Token = char>>() -> impl Parser<I, Output = NodeValue> {
 			elem.set_identity(Identity::from(idx))
 		}
 
-		NodeValue::Array(ArrayNode::new(vec))
+		NodeValue::Array(NonTerminalNode::new(vec))
 	});
 
 	cmb::attempt(content).or(empty)
@@ -94,15 +94,15 @@ mod test {
 
 		let (a, r) = parser.parse("1").unwrap();
 		assert_eq!(r, "");
-		assert_eq!(a.extract_array().value().extract_contents().len(), 1);
+		assert_eq!(a.extract_array().value().len(), 1);
 
 		let (a, r) = parser.parse("1,2").unwrap();
 		assert_eq!(r, "");
-		assert_eq!(a.extract_array().value().extract_contents().len(), 2);
+		assert_eq!(a.extract_array().value().len(), 2);
 
 		let (a, r) = parser.parse("   ").unwrap();
 		assert_eq!(r, "");
-		a.extract_array().value().assert_empty();
+		assert_eq!(a.extract_array().value().len(), 0);
 	}
 
 	#[test]
@@ -113,7 +113,7 @@ mod test {
 		let (act, rem) = parser.parse(&str).unwrap();
 		assert_eq!(rem, "");
 
-		let act = act.extract_array().value().extract_contents();
+		let act = act.extract_array().value();
 		assert_eq!(act.len(), 6);
 
 		let piv = &act[0];
@@ -148,13 +148,13 @@ mod test {
 
 		let (act, rem) = parser.parse(&str).unwrap();
 		assert_eq!(rem, "");
-		act.extract_array().value().assert_empty();
+		assert_eq!(act.extract_array().value().len(), 0);
 
 		let str = format!("[{WS}]");
 		let mut parser = super::array::<&str>();
 		let (act, rem) = parser.parse(&str).unwrap();
 		assert_eq!(rem, "");
-		act.extract_array().value().assert_empty();
+		assert_eq!(act.extract_array().value().len(), 0);
 	}
 
 	#[test]

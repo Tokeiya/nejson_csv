@@ -1,4 +1,4 @@
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub enum Identity {
 	Key(String),
 	Index(usize),
@@ -68,6 +68,16 @@ mod test {
 	}
 
 	#[test]
+	fn debug() {
+		let fixture = Identity::from("key");
+		assert_eq!(format!("{:?}", fixture), r#"Key("key")"#);
+
+		let fixture = Identity::from(42);
+		assert_eq!(format!("{:?}", fixture), r#"Index(42)"#);
+		println!("{:?}", &fixture);
+	}
+
+	#[test]
 	fn eq() {
 		let x = Identity::from("key");
 		let y = Identity::from("key");
@@ -88,5 +98,14 @@ mod test {
 			Identity::Root,
 			Identity::Key("key".to_string()),
 		);
+	}
+
+	#[test]
+	fn clone() {
+		let a = Identity::from("key");
+		let b = a.clone();
+
+		assert_eq!(&a, &b);
+		assert_ne!(&a as *const Identity, &b as *const Identity);
 	}
 }
