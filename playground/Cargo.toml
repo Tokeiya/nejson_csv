@@ -7,3 +7,4 @@ edition = "2021"
 csv = { path = "../csv" }
 ndjson = { path = "../ndjson" }
 combine = "*"
+rand = "*"
