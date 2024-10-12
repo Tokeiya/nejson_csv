@@ -1,3 +1,4 @@
+mod code_builder;
 mod equivalent_tests;
 
 pub mod test_prelude {

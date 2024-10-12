@@ -18,7 +18,6 @@ fn element<I: Stream<Token = char>>() -> impl Parser<I, Output = Rc<Node>> {
 		};
 
 		let id = ObjectIdentity::try_from(key.as_str()).unwrap();
-
 		v.set_identity(Identity::from(id.escaped()));
 
 		v
