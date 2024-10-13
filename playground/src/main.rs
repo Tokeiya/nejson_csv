@@ -28,15 +28,6 @@ fn main() {
 
 	let (root, _) = parser.parse(&buff).unwrap();
 	root.set_identity(Identity::Root);
-
-	let iter = BreadthFirstIterator::new(root.clone());
-
-	for elem in iter {
-		match elem.value() {
-			NodeValue::Terminal(t) => 
-			_=>continue
-		}
-	}
 }
 
 fn gen_sample() {
