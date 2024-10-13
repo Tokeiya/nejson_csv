@@ -1,3 +1,4 @@
+use super::empty_iterator::EmptyIterator;
 use super::identity::Identity;
 use super::node_value::NodeValue;
 use super::prelude::*;
@@ -139,6 +140,7 @@ pub mod test_helper {
 #[cfg(test)]
 mod test {
 	use super::*;
+
 	#[test]
 	fn new() {
 		let v = NodeValue::Terminal(TerminalNode::String("hello world".to_string()));
