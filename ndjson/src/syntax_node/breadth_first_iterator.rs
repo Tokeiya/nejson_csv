@@ -3,7 +3,7 @@ use crate::syntax_node::node_value::NodeValue;
 use std::collections::vec_deque::VecDeque;
 use std::rc::Rc;
 
-pub struct BreadthFirstIterator<'a>(VecDeque<&'a Rc<Node>>);
+pub struct BreadthFirstIterator(VecDeque<Rc<Node>>);
 
 impl From<Rc<Node>> for BreadthFirstIterator {
 	fn from(value: Rc<Node>) -> Self {
@@ -31,14 +31,14 @@ impl Iterator for BreadthFirstIterator {
 			NodeValue::Terminal(_) => Some(piv),
 			NodeValue::Array(arr) => {
 				for elem in arr.value().iter() {
-					self.0.push_back(elem);
+					self.0.push_back(elem.clone());
 				}
 
 				Some(piv)
 			}
 			NodeValue::Object(obj) => {
 				for elem in obj.value().iter() {
-					self.0.push_back(elem);
+					self.0.push_back(elem.clone());
 				}
 				Some(piv)
 			}

@@ -2,7 +2,7 @@ use super::node::Node;
 use crate::syntax_node::node_value::NodeValue;
 use std::rc::Rc;
 
-pub struct DepthFirstIterator<'a>(Vec<&'a Rc<Node>>);
+pub struct DepthFirstIterator(Vec<Rc<Node>>);
 
 impl From<Rc<Node>> for DepthFirstIterator {
 	fn from(value: Rc<Node>) -> Self {
@@ -25,12 +25,12 @@ impl Iterator for DepthFirstIterator {
 			NodeValue::Terminal(_) => {}
 			NodeValue::Array(arr) => {
 				for elem in arr.value().iter().rev() {
-					self.0.push(elem);
+					self.0.push(elem.clone());
 				}
 			}
 			NodeValue::Object(obj) => {
 				for elem in obj.value().iter().rev() {
-					self.0.push(elem);
+					self.0.push(elem.clone());
 				}
 			}
 		}

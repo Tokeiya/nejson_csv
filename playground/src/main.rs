@@ -13,6 +13,17 @@ use std::io::{BufReader, BufWriter, Read, Write};
 use std::path::PathBuf;
 
 fn main() {
+	let a = 200;
+
+	let foo = match a {
+		i if i % 3 == 0 && i % 5 == 0 => "fizz buzz".to_string(),
+		i if i % 3 == 0 => "fizz".to_string(),
+		i if i % 5 == 0 => "buzz".to_string(),
+		i => i.to_string(),
+	};
+}
+
+fn foo() {
 	gen_sample();
 
 	let current_dir: PathBuf = env::current_dir().unwrap();
