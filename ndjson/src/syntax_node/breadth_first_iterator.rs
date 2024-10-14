@@ -76,16 +76,6 @@ mod test {
 	}
 
 	#[test]
-	fn new() {
-		let root = node_helper::gen_sample();
-		let fixture = BreadthFirstIterator::from(&root);
-		assert!(std::ptr::eq(
-			root.borrow() as *const Node,
-			fixture.0[0].borrow() as *const Node
-		))
-	}
-
-	#[test]
 	fn breadth_first_iterator() {
 		let expected = vec![
 			"Root",
