@@ -5,15 +5,24 @@ use std::rc::Rc;
 
 pub struct BreadthFirstIterator<'a>(VecDeque<&'a Rc<Node>>);
 
-impl<'a> BreadthFirstIterator<'a> {
-	pub fn new(root: &Rc<Node>) -> BreadthFirstIterator {
+impl From<Rc<Node>> for BreadthFirstIterator {
+	fn from(value: Rc<Node>) -> Self {
 		let mut vec = VecDeque::new();
-		vec.push_back(root);
+		vec.push_back(value);
 		BreadthFirstIterator(vec)
 	}
 }
-impl<'a> Iterator for BreadthFirstIterator<'a> {
-	type Item = &'a Rc<Node>;
+
+impl From<&Rc<Node>> for BreadthFirstIterator {
+	fn from(value: &Rc<Node>) -> Self {
+		let mut vec = VecDeque::new();
+		vec.push_back(value.clone());
+		BreadthFirstIterator(vec)
+	}
+}
+
+impl Iterator for BreadthFirstIterator {
+	type Item = Rc<Node>;
 
 	fn next(&mut self) -> Option<Self::Item> {
 		let piv = self.0.pop_front()?;
@@ -45,9 +54,31 @@ mod test {
 	use std::borrow::Borrow;
 
 	#[test]
+	fn from_rc() {
+		let root = node_helper::gen_sample();
+		let fixture = BreadthFirstIterator::from(root.clone());
+
+		assert!(std::ptr::eq(
+			root.borrow() as *const Node,
+			fixture.0[0].borrow() as *const Node
+		));
+	}
+
+	#[test]
+	fn from_ref_rc() {
+		let root = node_helper::gen_sample();
+		let fixture = BreadthFirstIterator::from(&root);
+
+		assert!(std::ptr::eq(
+			root.borrow() as *const Node,
+			fixture.0[0].borrow() as *const Node
+		));
+	}
+
+	#[test]
 	fn new() {
 		let root = node_helper::gen_sample();
-		let fixture = BreadthFirstIterator::new(&root);
+		let fixture = BreadthFirstIterator::from(&root);
 		assert!(std::ptr::eq(
 			root.borrow() as *const Node,
 			fixture.0[0].borrow() as *const Node
@@ -74,7 +105,7 @@ mod test {
 		];
 
 		let root = node_helper::gen_sample();
-		let ite = BreadthFirstIterator::new(&root);
+		let ite = BreadthFirstIterator::from(&root);
 
 		let mut cnt = 0usize;
 

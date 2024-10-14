@@ -10,6 +10,7 @@ mod non_terminal_node;
 mod object_identity;
 mod single_iterator;
 mod terminal_node;
+mod traverse;
 
 pub mod prelude {
 	pub use super::breadth_first_iterator::BreadthFirstIterator;
