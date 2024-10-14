@@ -1,3 +1,4 @@
+use super::empty_iterator::EmptyIterator;
 use super::prelude::*;
 use std::rc::Rc;
 
@@ -7,16 +8,16 @@ pub enum Direction {
 }
 
 pub trait Traverse {
-	fn children(&self) -> Box<dyn Iterator<Item = &Rc<Node>>>;
-	fn ancestors(&self, direction: Direction) -> Box<dyn Iterator<Item = &Rc<Node>>>;
+	fn children(&self) -> Children;
+	fn descendants(&self, direction: Direction) -> Box<dyn Iterator<Item = &Rc<Node>>>;
 }
 
 impl Traverse for Rc<Node> {
-	fn children(&self) -> Box<dyn Iterator<Item = &Rc<Node>>> {
+	fn children(&self) -> Children {
 		todo!()
 	}
 
-	fn ancestors(&self, direction: Direction) -> Box<dyn Iterator<Item = &Rc<Node>>> {
+	fn descendants(&self, direction: Direction) -> Box<dyn Iterator<Item = &Rc<Node>>> {
 		todo!()
 	}
 }
@@ -83,7 +84,7 @@ mod test {
 	}
 
 	#[test]
-	fn breadth_ancestor() {
+	fn breadth_descendants() {
 		let expected = vec![
 			"Root",
 			"Root::arr",
@@ -104,13 +105,13 @@ mod test {
 		let root = node_helper::gen_sample();
 		assert_eq!(root.children().count(), expected.len());
 
-		for (act, exp) in root.ancestors(Direction::Breadth).zip(expected.iter()) {
+		for (act, exp) in root.descendants(Direction::Breadth).zip(expected.iter()) {
 			assert_eq!(&act.full_qualified_name().text_expression(), exp)
 		}
 	}
 
 	#[test]
-	fn depth_ancestor() {
+	fn depth_descendants() {
 		let expected = vec![
 			"Root",
 			"Root::arr",
@@ -131,16 +132,16 @@ mod test {
 		let root = node_helper::gen_sample();
 		assert_eq!(root.children().count(), expected.len());
 
-		for (act, exp) in root.ancestors(Direction::Breadth).zip(expected.iter()) {
+		for (act, exp) in root.descendants(Direction::Breadth).zip(expected.iter()) {
 			assert_eq!(&act.full_qualified_name().text_expression(), exp)
 		}
 	}
 
 	#[test]
-	fn empty_ancestor() {
+	fn empty_descendants() {
 		let root = Node::new(NodeValue::Terminal(TerminalNode::False()));
 
-		assert_eq!(root.ancestors(Direction::Breadth).count(), 0);
-		assert_eq!(root.ancestors(Direction::Depth).count(), 0);
+		assert_eq!(root.descendants(Direction::Breadth).count(), 0);
+		assert_eq!(root.descendants(Direction::Depth).count(), 0);
 	}
 }

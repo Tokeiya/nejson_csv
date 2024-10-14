@@ -2,25 +2,35 @@
 
 mod cache_search;
 mod gen_sample;
+mod poc;
 
 use combine::Parser;
 use ndjson::parser::value_parser;
 use ndjson::syntax_node::prelude::*;
-use std::cell::Ref;
+use poc::drop_detect::DropDetector;
+use std::collections::VecDeque;
 use std::env;
 use std::fs::File;
 use std::io::{BufReader, BufWriter, Read, Write};
 use std::path::PathBuf;
-
 fn main() {
-	let a = 200;
+	println!("Call bar");
+	bar();
+	println!("Done");
+}
 
-	let foo = match a {
-		i if i % 3 == 0 && i % 5 == 0 => "fizz buzz".to_string(),
-		i if i % 3 == 0 => "fizz".to_string(),
-		i if i % 5 == 0 => "buzz".to_string(),
-		i => i.to_string(),
-	};
+fn bar() {
+	println!("Enter bar");
+	let mut vec = VecDeque::new();
+	for _ in 0..10 {
+		vec.push_front(DropDetector::new())
+	}
+
+	for elem in vec.iter() {
+		println!("{:?}", elem.identity());
+	}
+
+	println!("Exit bar");
 }
 
 fn foo() {

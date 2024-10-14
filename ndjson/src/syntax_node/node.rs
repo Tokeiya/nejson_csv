@@ -66,6 +66,46 @@ pub mod test_helper {
 		WS.to_string()
 	}
 
+	pub fn array() -> Rc<Node> {
+		let vec = vec![
+			Node::new(NodeValue::Terminal(TerminalNode::Integer("0".to_string()))),
+			Node::new(NodeValue::Terminal(TerminalNode::Integer("1".to_string()))),
+			Node::new(NodeValue::Terminal(TerminalNode::Integer("2".to_string()))),
+			Node::new(NodeValue::Terminal(TerminalNode::Integer("3".to_string()))),
+			Node::new(NodeValue::Terminal(TerminalNode::Integer("4".to_string()))),
+		];
+
+		let root = Node::new(NodeValue::Array(NonTerminalNode::new(vec)));
+
+		for (idx, elem) in root.value().extract_array().value().iter().enumerate() {
+			elem.set_parent(root.clone());
+			elem.set_identity(Identity::Index(idx));
+		}
+
+		root.set_identity(Identity::Root);
+		root
+	}
+
+	pub fn obj() -> Rc<Node> {
+		let vec = vec![
+			Node::new(NodeValue::Terminal(TerminalNode::String("0".to_string()))),
+			Node::new(NodeValue::Terminal(TerminalNode::String("1".to_string()))),
+			Node::new(NodeValue::Terminal(TerminalNode::String("2".to_string()))),
+			Node::new(NodeValue::Terminal(TerminalNode::String("3".to_string()))),
+			Node::new(NodeValue::Terminal(TerminalNode::String("4".to_string()))),
+		];
+
+		let root = Node::new(NodeValue::Object(NonTerminalNode::new(vec)));
+
+		for (idx, elem) in root.value().extract_object().value().iter().enumerate() {
+			elem.set_parent(root.clone());
+			elem.set_identity(Identity::Key(idx.to_string()));
+		}
+
+		root.set_identity(Identity::Root);
+		root
+	}
+
 	pub fn gen_sample() -> Rc<Node> {
 		let a = Node::new(NodeValue::Terminal(TerminalNode::Integer("10".to_string())));
 		a.set_identity(Identity::Key("1_0".to_string()));
