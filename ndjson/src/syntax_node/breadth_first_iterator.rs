@@ -3,26 +3,16 @@ use crate::syntax_node::node_value::NodeValue;
 use std::collections::vec_deque::VecDeque;
 use std::rc::Rc;
 
-pub struct BreadthFirstIterator(VecDeque<Rc<Node>>);
+pub struct BreadthFirstIterator<'a>(VecDeque<&'a Rc<Node>>);
 
-impl From<Rc<Node>> for BreadthFirstIterator {
-	fn from(value: Rc<Node>) -> Self {
-		let mut vec = VecDeque::new();
-		vec.push_back(value);
-		BreadthFirstIterator(vec)
+impl<'a> From<VecDeque<&'a Rc<Node>>> for BreadthFirstIterator<'a> {
+	fn from(value: VecDeque<&'a Rc<Node>>) -> Self {
+		BreadthFirstIterator(value)
 	}
 }
 
-impl From<&Rc<Node>> for BreadthFirstIterator {
-	fn from(value: &Rc<Node>) -> Self {
-		let mut vec = VecDeque::new();
-		vec.push_back(value.clone());
-		BreadthFirstIterator(vec)
-	}
-}
-
-impl Iterator for BreadthFirstIterator {
-	type Item = Rc<Node>;
+impl<'a> Iterator for BreadthFirstIterator<'a> {
+	type Item = &'a Rc<Node>;
 
 	fn next(&mut self) -> Option<Self::Item> {
 		let piv = self.0.pop_front()?;
@@ -31,14 +21,14 @@ impl Iterator for BreadthFirstIterator {
 			NodeValue::Terminal(_) => Some(piv),
 			NodeValue::Array(arr) => {
 				for elem in arr.value().iter() {
-					self.0.push_back(elem.clone());
+					self.0.push_back(elem);
 				}
 
 				Some(piv)
 			}
 			NodeValue::Object(obj) => {
 				for elem in obj.value().iter() {
-					self.0.push_back(elem.clone());
+					self.0.push_back(elem);
 				}
 				Some(piv)
 			}
@@ -54,20 +44,11 @@ mod test {
 	use std::borrow::Borrow;
 
 	#[test]
-	fn from_rc() {
+	fn from_vecdeque() {
 		let root = node_helper::gen_sample();
-		let fixture = BreadthFirstIterator::from(root.clone());
-
-		assert!(std::ptr::eq(
-			root.borrow() as *const Node,
-			fixture.0[0].borrow() as *const Node
-		));
-	}
-
-	#[test]
-	fn from_ref_rc() {
-		let root = node_helper::gen_sample();
-		let fixture = BreadthFirstIterator::from(&root);
+		let mut vec = VecDeque::new();
+		vec.push_back(&root);
+		let fixture = BreadthFirstIterator::from(vec);
 
 		assert!(std::ptr::eq(
 			root.borrow() as *const Node,
@@ -95,7 +76,10 @@ mod test {
 		];
 
 		let root = node_helper::gen_sample();
-		let ite = BreadthFirstIterator::from(&root);
+		let mut vec = VecDeque::new();
+		vec.push_back(&root);
+
+		let ite = BreadthFirstIterator::from(vec);
 
 		let mut cnt = 0usize;
 

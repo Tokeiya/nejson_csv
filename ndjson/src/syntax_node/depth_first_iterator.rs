@@ -2,22 +2,16 @@ use super::node::Node;
 use crate::syntax_node::node_value::NodeValue;
 use std::rc::Rc;
 
-pub struct DepthFirstIterator(Vec<Rc<Node>>);
+pub struct DepthFirstIterator<'a>(Vec<&'a Rc<Node>>);
 
-impl From<Rc<Node>> for DepthFirstIterator {
-	fn from(value: Rc<Node>) -> Self {
-		DepthFirstIterator(vec![value])
+impl<'a> From<Vec<&'a Rc<Node>>> for DepthFirstIterator<'a> {
+	fn from(value: Vec<&'a Rc<Node>>) -> Self {
+		DepthFirstIterator(value)
 	}
 }
 
-impl From<&Rc<Node>> for DepthFirstIterator {
-	fn from(value: &Rc<Node>) -> Self {
-		DepthFirstIterator(vec![value.clone()])
-	}
-}
-
-impl Iterator for DepthFirstIterator {
-	type Item = Rc<Node>;
+impl<'a> Iterator for DepthFirstIterator<'a> {
+	type Item = &'a Rc<Node>;
 	fn next(&mut self) -> Option<Self::Item> {
 		let piv = self.0.pop()?;
 
@@ -25,12 +19,12 @@ impl Iterator for DepthFirstIterator {
 			NodeValue::Terminal(_) => {}
 			NodeValue::Array(arr) => {
 				for elem in arr.value().iter().rev() {
-					self.0.push(elem.clone());
+					self.0.push(elem);
 				}
 			}
 			NodeValue::Object(obj) => {
 				for elem in obj.value().iter().rev() {
-					self.0.push(elem.clone());
+					self.0.push(elem);
 				}
 			}
 		}
@@ -46,20 +40,9 @@ mod test {
 	use std::borrow::Borrow;
 
 	#[test]
-	fn from_rc() {
+	fn from() {
 		let root = node_helper::gen_sample();
-		let fixture = DepthFirstIterator::from(root.clone());
-
-		assert!(std::ptr::eq(
-			root.borrow() as *const Node,
-			fixture.0[0].borrow() as *const Node
-		));
-	}
-
-	#[test]
-	fn from_ref_rc() {
-		let root = node_helper::gen_sample();
-		let fixture = DepthFirstIterator::from(&root);
+		let fixture = DepthFirstIterator::from(vec![&root]);
 
 		assert!(std::ptr::eq(
 			root.borrow() as *const Node,
@@ -87,7 +70,7 @@ mod test {
 		];
 
 		let root = node_helper::gen_sample();
-		let fixture = DepthFirstIterator::from(&root);
+		let fixture = DepthFirstIterator::from(vec![&root]);
 
 		let mut cnt = 0usize;
 		for elem in fixture {

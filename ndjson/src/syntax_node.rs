@@ -2,7 +2,6 @@ mod breadth_first_iterator;
 mod char_continuous_counter;
 mod children;
 mod depth_first_iterator;
-mod empty_iterator;
 mod full_qualified_name;
 mod identity;
 mod node;
@@ -17,7 +16,6 @@ pub mod prelude {
 	pub use super::breadth_first_iterator::BreadthFirstIterator;
 	pub use super::char_continuous_counter::CharContinuousCounter;
 	pub use super::children::Children;
-	pub use super::empty_iterator::EmptyIterator;
 	pub use super::full_qualified_name::FullQualifiedName;
 	pub use super::identity::Identity;
 	pub use super::node::Node;
