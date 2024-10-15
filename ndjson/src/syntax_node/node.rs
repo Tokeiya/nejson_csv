@@ -53,6 +53,14 @@ impl Node {
 
 		vec.push(self.identity().clone());
 	}
+
+	fn children(&self) -> Box<dyn Iterator<Item = &Rc<Node>> + '_> {
+		match self.value() {
+			NodeValue::Terminal(_) => Box::new(std::iter::empty()),
+			NodeValue::Object(obj) => Box::new(obj.value().iter()),
+			NodeValue::Array(arr) => Box::new(arr.value().iter()),
+		}
+	}
 }
 
 #[cfg(test)]
@@ -180,6 +188,54 @@ pub mod test_helper {
 #[cfg(test)]
 mod test {
 	use super::*;
+
+	#[test]
+	fn arr_children() {
+		let root = test_helper::array();
+
+		for (idx, act) in root.children().enumerate() {
+			act.identity().assert_index(idx);
+		}
+
+		assert_eq!(
+			root.children().count(),
+			root.value().extract_array().value().len()
+		);
+	}
+
+	#[test]
+	fn obj_children() {
+		let root = test_helper::obj();
+
+		for (idx, elem) in root.children().enumerate() {
+			elem.identity().assert_key(&idx.to_string());
+		}
+
+		assert_eq!(
+			root.children().count(),
+			root.value().extract_object().value().len()
+		);
+	}
+
+	#[test]
+	fn terminal_expression() {
+		let root = Node::new(NodeValue::Terminal(TerminalNode::Integer("42".to_string())));
+		root.set_identity(Identity::Root);
+		let mut children = root.children();
+
+		for _ in 0..10 {
+			assert!(children.next().is_none());
+		}
+
+		assert_eq!(root.children().count(), 0);
+	}
+
+	#[test]
+	fn complex_children() {
+		let root = test_helper::gen_sample();
+
+		assert_eq!(root.children().count(), 1);
+	}
 
 	#[test]
 	fn new() {

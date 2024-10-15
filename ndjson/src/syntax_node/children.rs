@@ -1,17 +1,18 @@
+use crate::syntax_node::node_value::NodeValue;
 use crate::syntax_node::prelude::Node;
 use std::rc::Rc;
 
-pub struct Children(Rc<Node>);
+pub struct Children(Rc<Node>, usize);
 
 impl From<Rc<Node>> for Children {
 	fn from(value: Rc<Node>) -> Self {
-		todo!()
+		Children(value, 0)
 	}
 }
 
 impl From<&Rc<Node>> for Children {
 	fn from(value: &Rc<Node>) -> Self {
-		todo!()
+		Children(value.clone(), 0)
 	}
 }
 
@@ -19,13 +20,21 @@ impl Iterator for Children {
 	type Item = Rc<Node>;
 
 	fn next(&mut self) -> Option<Self::Item> {
-		todo!()
+		match self.0.value() {
+			NodeValue::Terminal(_) => None,
+			NodeValue::Array(ary) => {
+				todo!()
+			}
+			NodeValue::Object(_) => {
+				todo!()
+			}
+		}
 	}
 }
 
 #[cfg(test)]
 mod test {
-	use super::super::test_prelude::node_helper::gen_sample;
+	use super::super::test_prelude::node_helper::{array, gen_sample, obj};
 	use super::*;
 	use crate::syntax_node::prelude::*;
 	use std::ptr::eq;
@@ -63,7 +72,25 @@ mod test {
 	}
 
 	#[test]
-	fn arr_terminal() {
-		todo!()
+	fn arr_value() {
+		let root = array();
+		let mut fixture = Children::from(root.clone());
+
+		for (idx, elem) in fixture.enumerate() {
+			elem.identity().assert_index(idx);
+		}
+
+		assert_eq!(Children::from(&root).count(), 5);
+	}
+
+	#[test]
+	fn obj_value() {
+		let root = obj();
+
+		for (idx, elem) in Children::from(&root).enumerate() {
+			elem.identity().assert_key(&idx.to_string())
+		}
+
+		assert_eq!(Children::from(&root).count(), 5);
 	}
 }

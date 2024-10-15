@@ -5,18 +5,18 @@ mod gen_sample;
 mod poc;
 
 use combine::Parser;
-use ndjson::parser::value_parser;
-use ndjson::syntax_node::prelude::*;
 use poc::drop_detect::DropDetector;
 use std::collections::VecDeque;
-use std::env;
 use std::fs::File;
-use std::io::{BufReader, BufWriter, Read, Write};
-use std::path::PathBuf;
+use std::io::{BufWriter, Read, Write};
+use std::rc::Rc;
+use std::slice::Iter;
+
+pub struct Identity(i32);
+
 fn main() {
-	println!("Call bar");
-	bar();
-	println!("Done");
+	let mut vec = Rc::new(Vec::<i32>::new());
+	let mut iter: Iter<i32> = vec.iter();
 }
 
 fn bar() {
@@ -31,24 +31,6 @@ fn bar() {
 	}
 
 	println!("Exit bar");
-}
-
-fn foo() {
-	gen_sample();
-
-	let current_dir: PathBuf = env::current_dir().unwrap();
-	println!("The current directory is: {:?}", current_dir);
-
-	let mut file = File::open("./artifact/hoge.json").unwrap();
-	let mut rdr = BufReader::new(&mut file);
-
-	let mut buff = String::new();
-	_ = rdr.read_to_string(&mut buff).unwrap();
-
-	let mut parser = value_parser::<&str>();
-
-	let (root, _) = parser.parse(&buff).unwrap();
-	root.set_identity(Identity::Root);
 }
 
 fn gen_sample() {
