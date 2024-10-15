@@ -2,6 +2,7 @@ use super::depth_first_iterator::DepthFirstIterator;
 use super::identity::Identity;
 use super::node_value::NodeValue;
 use super::prelude::*;
+use crate::syntax_node::breadth_first_iterator::BreadthFirstIterator;
 use std::cell::{Ref, RefCell};
 use std::collections::VecDeque;
 use std::rc::{Rc, Weak};
@@ -60,7 +61,7 @@ impl Node {
 		vec.push(self.identity().clone());
 	}
 
-	fn children(&self) -> Box<dyn Iterator<Item = &Rc<Node>> + '_> {
+	pub fn children(&self) -> Box<dyn Iterator<Item = &Rc<Node>> + '_> {
 		match self.value() {
 			NodeValue::Terminal(_) => Box::new(std::iter::empty()),
 			NodeValue::Object(obj) => Box::new(obj.value().iter()),
@@ -68,7 +69,7 @@ impl Node {
 		}
 	}
 
-	fn descendants(&self, direction: Direction) -> Box<dyn Iterator<Item = &'_ Rc<Node>> + '_> {
+	pub fn descendants(&self, direction: Direction) -> Box<dyn Iterator<Item = &'_ Rc<Node>> + '_> {
 		match direction {
 			Direction::Depth => match self.value() {
 				NodeValue::Terminal(_) => Box::new(std::iter::empty()),

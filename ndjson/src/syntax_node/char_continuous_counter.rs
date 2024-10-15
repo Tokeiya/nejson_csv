@@ -20,16 +20,8 @@ impl<const C: char> CharContinuousCounter<{ C }> {
 		}
 	}
 
-	pub fn current(&self) -> usize {
-		self.current
-	}
-
 	pub fn max(&self) -> usize {
 		self.max
-	}
-
-	pub fn target(&self) -> char {
-		C
 	}
 }
 
@@ -40,7 +32,6 @@ pub mod test_helper {
 	impl<const C: char> CharContinuousCounter<{ C }> {
 		pub fn assert_current(&self, expected: usize) {
 			assert_eq!(self.current, expected);
-			assert_eq!(self.current(), expected);
 		}
 
 		pub fn assert_max(&self, expected: usize) {
@@ -78,11 +69,5 @@ mod tests {
 		fixture.input(':');
 		fixture.assert_current(1);
 		fixture.assert_max(2);
-	}
-
-	#[test]
-	fn target_test() {
-		let fixture = CharContinuousCounter::<':'>::new();
-		assert_eq!(fixture.target(), ':');
 	}
 }
