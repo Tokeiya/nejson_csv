@@ -7,6 +7,7 @@ mod node;
 mod node_value;
 mod non_terminal_node;
 mod object_identity;
+mod part_match;
 mod single_iterator;
 mod terminal_node;
 mod traverse;
