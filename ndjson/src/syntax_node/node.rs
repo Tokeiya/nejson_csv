@@ -5,6 +5,7 @@ use super::prelude::*;
 use crate::syntax_node::breadth_first_iterator::BreadthFirstIterator;
 use std::cell::{Ref, RefCell};
 use std::collections::VecDeque;
+use std::ops::Deref;
 use std::rc::{Rc, Weak};
 
 pub enum Direction {
@@ -69,6 +70,22 @@ impl Node {
 		}
 	}
 
+	pub fn winnow_children(&self, id: Identity) -> Box<dyn Iterator<Item = &Rc<Node>> + '_> {
+		match self.value() {
+			NodeValue::Terminal(_) => Box::new(std::iter::empty()),
+			NodeValue::Object(obj) => Box::new(
+				obj.value()
+					.iter()
+					.filter(move |a| a.identity().deref() == &id),
+			),
+			NodeValue::Array(arr) => Box::new(
+				arr.value()
+					.iter()
+					.filter(move |a| a.identity().deref() == &id),
+			),
+		}
+	}
+
 	pub fn descendants(&self, direction: Direction) -> Box<dyn Iterator<Item = &'_ Rc<Node>> + '_> {
 		match direction {
 			Direction::Depth => match self.value() {
@@ -101,6 +118,46 @@ impl Node {
 #[cfg(test)]
 mod test {
 	use super::*;
+
+	#[test]
+	fn winnow_children() {
+		let fixture = test_helper::gen_sample();
+		let arr = fixture.children().next().unwrap();
+
+		for elem in arr.children() {
+			println!("{}", elem.full_qualified_name().text_expression())
+		}
+
+		assert_eq!(arr.winnow_children(Identity::Index(0)).count(), 1);
+		assert_eq!(
+			arr.winnow_children(Identity::Index(0))
+				.next()
+				.unwrap()
+				.full_qualified_name()
+				.text_expression(),
+			"Root::arr::[0]"
+		);
+
+		let act = arr.winnow_children(Identity::Index(0)).next().unwrap();
+
+		for elem in act.winnow_children(Identity::Key("0_0".to_string())) {
+			println!("{}", elem.full_qualified_name().text_expression())
+		}
+
+		assert_eq!(
+			act.winnow_children(Identity::Key("0_0".to_string()))
+				.count(),
+			1
+		);
+		assert_eq!(
+			act.winnow_children(Identity::Key("0_0".to_string()))
+				.next()
+				.unwrap()
+				.full_qualified_name()
+				.text_expression(),
+			"Root::arr::[0]0_0"
+		);
+	}
 
 	#[test]
 	fn breadth() {
