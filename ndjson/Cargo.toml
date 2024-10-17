@@ -4,8 +4,10 @@ version = "0.1.0"
 edition = "2021"
 
 [dev-dependencies]
-chrono = "*"
+mockall = "*"
 
 [dependencies]
 combine = "*"
 thiserror = "*"
+chrono = "*"
+chrono-tz = "*"

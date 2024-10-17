@@ -1,5 +1,6 @@
 mod array;
 mod boolean;
+mod log;
 mod null;
 mod number;
 mod object;
