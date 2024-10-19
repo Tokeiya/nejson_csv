@@ -33,3 +33,11 @@ fn main() {
 		println!("{elem}")
 	}
 }
+
+fn foo(
+	a: Rc<RefCell<String>>,
+	b: Rc<RefCell<String>>,
+	c: Rc<RefCell<String>>,
+	d: Rc<RefCell<String>>,
+) {
+}
