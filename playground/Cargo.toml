@@ -12,4 +12,3 @@ ndjson = { path = "../ndjson" }
 combine = "*"
 rand = "*"
 chrono = "*"
-chrono-tz = "*"
