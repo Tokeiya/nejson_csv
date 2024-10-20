@@ -4,7 +4,7 @@ use chrono::{DateTime, Local, TimeZone};
 pub struct LocalTimeStamper;
 
 impl TimeStamper<Local> for LocalTimeStamper {
-	fn time_stamp(&self) -> DateTime<Local> {
+	fn time_stamp() -> DateTime<Local> {
 		Local::now()
 	}
 }
@@ -22,7 +22,7 @@ mod test {
 
 		for _ in 0..100 {
 			let now = Local::now();
-			let stamp = LocalTimeStamper.time_stamp();
+			let stamp = LocalTimeStamper::time_stamp();
 
 			accum += (now - stamp).abs();
 			assert!((now - stamp).abs() < single_tolerance);
