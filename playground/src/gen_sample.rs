@@ -63,7 +63,6 @@ fn generate_object(
 	indent_cnt: usize,
 ) -> IoResult<()> {
 	let indent = std::iter::repeat(" ").take(indent_cnt).collect::<String>();
-	let str = indent.as_str();
 
 	writer.write_fmt(format_args_nl!(
 		"{}{{",
@@ -104,8 +103,6 @@ fn generate_array(
 	indent_cnt: usize,
 ) -> IoResult<()> {
 	let indent = std::iter::repeat(" ").take(indent_cnt).collect::<String>();
-
-	let str = indent.as_str();
 
 	writer.write_fmt(format_args_nl!("{}[", get_indent(indent.as_str(), &recent)))?;
 
