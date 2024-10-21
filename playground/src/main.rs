@@ -1,5 +1,13 @@
-mod use_rc;
+#[derive(Debug)]
+struct Foo {
+	key: i32,
+	value: String,
+}
 
-pub struct Integer(pub i32);
-
-fn main() {}
+fn main() {
+	let a = Foo {
+		key: 1,
+		value: "test".to_string(),
+	};
+	println!("{:?}", a);
+}

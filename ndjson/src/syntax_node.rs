@@ -7,17 +7,18 @@ mod node;
 mod node_value;
 mod non_terminal_node;
 mod object_identity;
+mod single_iterator;
 mod terminal_node;
+mod traverse;
 
 pub mod prelude {
-	pub use super::breadth_first_iterator::BreadthFirstIterator;
-	pub use super::char_continuous_counter::CharContinuousCounter;
 	pub use super::full_qualified_name::FullQualifiedName;
 	pub use super::identity::Identity;
-	pub use super::node::Node;
+	pub use super::node::{Direction, Node};
 	pub use super::node_value::NodeValue;
 	pub use super::non_terminal_node::NonTerminalNode;
 	pub use super::object_identity::ObjectIdentity;
+	pub use super::single_iterator::SingleIterator;
 	pub use super::terminal_node::TerminalNode;
 }
 
