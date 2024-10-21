@@ -37,7 +37,7 @@ def main(package: str, module: str):
 
     if toolchain == "nightly-x86_64-pc-windows-msvc (default)":
         os.environ["RUSTFLAGS"] = "-Cinstrument-coverage"
-    elif toolchain == "my-nightly (default)" or toolchain=="nightly-aarch64-unknown-linux-gnu (default)":
+    elif toolchain == "my-nightly (default)" or toolchain=="nightly-aarch64-unknown-linux-gnu (default)" or toolchain=="nightly-x86_64-pc-windows-gnu (default)":
         os.environ[
             "RUSTFLAGS"] = "-Zprofile -Ccodegen-units=1 -Copt-level=0 -Clink-dead-code -Coverflow-checks=off -Zpanic_abort_tests -Cpanic=abort"
     else:
