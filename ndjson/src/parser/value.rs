@@ -17,17 +17,8 @@ pub fn ws<I: Stream<Token = char>>() -> impl Parser<I, Output = String> {
 	cmb::many::<String, I, _>(space)
 }
 
-fn value_<I: Stream<Token = char>>(
-	logger: Rc<RefCell<Vec<String>>>,
-) -> impl Parser<I, Output = Rc<Node>> {
-	let v = choice!(
-		boolean(logger.clone()),
-		null(logger.clone()),
-		string(),
-		number(),
-		array(logger.clone()),
-		object(logger.clone())
-	);
+fn value_<I: Stream<Token = char>>() -> impl Parser<I, Output = Rc<Node>> {
+	let v = choice!(boolean(), null(), string(), number(), array(), object());
 	(ws(), v, ws()).map(|(_, v, _)| {
 		let root = Node::new(v);
 
@@ -46,9 +37,9 @@ fn value_<I: Stream<Token = char>>(
 }
 
 parser! {
-	pub fn value[I](logger:Rc<RefCell<Vec<String>>>)(I)->Rc<Node>
+	pub fn value[I]()(I)->Rc<Node>
 	where [I:Stream<Token=char>]{
-		value_(logger.clone())
+		value_()
 	}
 }
 #[cfg(test)]
@@ -66,7 +57,7 @@ mod test {
 	fn string() {
 		let logger = Logger::new(RefCell::new(Vec::new()));
 		let str = add_ws(r#""rust""#);
-		let mut parser = super::value::<&str>(logger);
+		let mut parser = super::value::<&str>();
 		let (a, rem) = parser.parse(&str).unwrap();
 		assert_eq!(rem, "");
 		a.value().extract_terminal().assert_string("rust");
@@ -77,7 +68,7 @@ mod test {
 		let logger = Logger::new(RefCell::new(Vec::new()));
 
 		let str = add_ws("42");
-		let mut parser = super::value::<&str>(logger);
+		let mut parser = super::value::<&str>();
 		let (a, rem) = parser.parse(&str).unwrap();
 		assert_eq!(rem, "");
 		a.value().extract_terminal().assert_integer("42");
@@ -88,13 +79,13 @@ mod test {
 		let logger = Logger::new(RefCell::new(Vec::new()));
 
 		let str = add_ws("42.195");
-		let mut parser = super::value::<&str>(logger.clone());
+		let mut parser = super::value::<&str>();
 		let (a, rem) = parser.parse(&str).unwrap();
 		assert_eq!(rem, "");
 		a.value().extract_terminal().assert_float("42.195");
 
 		let str = add_ws("42.1955e-1");
-		let mut parser = super::value::<&str>(logger.clone());
+		let mut parser = super::value::<&str>();
 		let (a, rem) = parser.parse(&str).unwrap();
 		assert_eq!(rem, "");
 		a.value().extract_terminal().assert_float("42.1955e-1");
@@ -105,13 +96,13 @@ mod test {
 		let logger = Logger::new(RefCell::new(Vec::new()));
 
 		let str = add_ws("true");
-		let mut parser = super::value::<&str>(logger.clone());
+		let mut parser = super::value::<&str>();
 		let (a, rem) = parser.parse(&str).unwrap();
 		assert_eq!(rem, "");
 		a.value().extract_terminal().assert_true();
 
 		let str = add_ws("false");
-		let mut parser = super::value::<&str>(logger.clone());
+		let mut parser = super::value::<&str>();
 		let (a, rem) = parser.parse(&str).unwrap();
 		assert_eq!(rem, "");
 		a.value().extract_terminal().assert_false();
@@ -122,7 +113,7 @@ mod test {
 		let logger = Logger::new(RefCell::new(Vec::new()));
 
 		let str = add_ws("null");
-		let mut parser = super::value::<&str>(logger.clone());
+		let mut parser = super::value::<&str>();
 		let (a, rem) = parser.parse(&str).unwrap();
 		assert_eq!(rem, "");
 		a.value().extract_terminal().assert_null();
@@ -132,7 +123,7 @@ mod test {
 	fn empty_array() {
 		let logger = Logger::new(RefCell::new(Vec::new()));
 
-		let mut parser = super::value::<&str>(logger.clone());
+		let mut parser = super::value::<&str>();
 		let (v, r) = parser.parse("[   ]").unwrap();
 		assert_eq!(r, "");
 		assert_eq!(v.value().extract_array().value().len(), 0);
@@ -142,7 +133,7 @@ mod test {
 		let logger = Logger::new(RefCell::new(Vec::new()));
 
 		let str = add_ws("[1,  2,3]");
-		let mut parser = super::value::<&str>(logger.clone()); //::<&str>();
+		let mut parser = super::value::<&str>(); //::<&str>();
 		let (a, rem) = parser.parse(&str).unwrap();
 		assert_eq!(rem, "");
 		a.identity().assert_undefined();
@@ -167,7 +158,7 @@ mod test {
 		let logger = Logger::new(RefCell::new(Vec::new()));
 
 		let str = add_ws(r#"{"a": 1, "b": 2, "c": 3}"#);
-		let mut parser = super::value::<&str>(logger.clone());
+		let mut parser = super::value::<&str>();
 		let (a, rem) = parser.parse(&str).unwrap();
 		a.identity().assert_undefined();
 		assert_eq!(rem, "");
@@ -188,7 +179,7 @@ mod test {
 	fn complex() {
 		let logger = Logger::new(RefCell::new(Vec::new()));
 
-		let mut parser = super::value::<&str>(logger.clone());
+		let mut parser = super::value::<&str>();
 		let (a, r) = parser
 			.parse(r#"{"obj"  :{   "o":10}      ,"arr":[1,2,3]}"#)
 			.unwrap();
@@ -245,7 +236,7 @@ mod test {
 	#[test]
 	fn parent() {
 		let logger = Logger::new(RefCell::new(Vec::new()));
-		let mut parser = value::<&str>(logger.clone());
+		let mut parser = value::<&str>();
 		let (root, _) = parser.parse("[1,2]").unwrap();
 
 		if let NodeValue::Array(arr) = root.value() {

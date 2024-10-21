@@ -4,9 +4,7 @@ use combine::{Parser, Stream};
 use std::cell::RefCell;
 use std::rc::Rc;
 
-pub fn null<I: Stream<Token = char>>(
-	logger: Rc<RefCell<Vec<String>>>,
-) -> impl Parser<I, Output = NodeValue> {
+pub fn null<I: Stream<Token = char>>() -> impl Parser<I, Output = NodeValue> {
 	chr::string("null").map(|_| NodeValue::Terminal(TerminalNode::Null()))
 }
 
@@ -18,7 +16,7 @@ mod test {
 	}
 	#[test]
 	fn null() {
-		let mut parser = super::null::<&str>(gen_logger());
+		let mut parser = super::null::<&str>();
 		let (a, rem) = parser.parse("null").unwrap();
 		assert_eq!(rem, "");
 		a.extract_terminal().assert_null();
@@ -26,7 +24,7 @@ mod test {
 
 	#[test]
 	fn invalid() {
-		let mut parser = super::null::<&str>(gen_logger());
+		let mut parser = super::null::<&str>();
 		assert!(parser.parse("Null").is_err());
 		assert!(parser.parse("hoge").is_err())
 	}

@@ -4,9 +4,7 @@ use combine::{Parser, Stream};
 use std::cell::RefCell;
 use std::rc::Rc;
 
-pub fn boolean<I: Stream<Token = char>>(
-	logger: Rc<RefCell<Vec<String>>>,
-) -> impl Parser<I, Output = NodeValue> {
+pub fn boolean<I: Stream<Token = char>>() -> impl Parser<I, Output = NodeValue> {
 	chr::string::<I>("true")
 		.or(chr::string::<I>("false"))
 		.map(|str| {
@@ -30,7 +28,7 @@ mod test {
 
 	#[test]
 	fn boolean() {
-		let mut parser = super::boolean::<&str>(gen_logger());
+		let mut parser = super::boolean::<&str>();
 		let (a, rem) = parser.parse("true").unwrap();
 		assert_eq!(rem, "");
 		a.extract_terminal().assert_true();
@@ -42,7 +40,7 @@ mod test {
 
 	#[test]
 	fn invalid() {
-		let mut parser = super::boolean::<&str>(gen_logger());
+		let mut parser = super::boolean::<&str>();
 		assert!(parser.parse("True").is_err());
 		assert!(parser.parse("False").is_err())
 	}

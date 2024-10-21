@@ -5,13 +5,11 @@ use combine::{self as cmb, parser::char as chr, Parser, Stream};
 use std::cell::RefCell;
 use std::rc::Rc;
 
-fn element<I: Stream<Token = char>>(
-	logger: Rc<RefCell<Vec<String>>>,
-) -> impl Parser<I, Output = Rc<Node>> {
+fn element<I: Stream<Token = char>>() -> impl Parser<I, Output = Rc<Node>> {
 	let check = (ws::<I>(), string_parser::<I>(), ws::<I>());
 
-	let key = (cmb::look_ahead(check), value::<I>(logger.clone())).map(|(_, v)| v);
-	(key, chr::char(':'), value(logger.clone())).map(|(k, _, v)| {
+	let key = (cmb::look_ahead(check), value::<I>()).map(|(_, v)| v);
+	(key, chr::char(':'), value()).map(|(k, _, v)| {
 		//ObjectElement::new(k, v)
 		let NodeValue::Terminal(key) = k.value() else {
 			unreachable!()
@@ -27,25 +25,19 @@ fn element<I: Stream<Token = char>>(
 	})
 }
 
-fn first<I: Stream<Token = char>>(
-	logger: Rc<RefCell<Vec<String>>>,
-) -> impl Parser<I, Output = Rc<Node>> {
-	element::<I>(logger)
+fn first<I: Stream<Token = char>>() -> impl Parser<I, Output = Rc<Node>> {
+	element::<I>()
 }
 
-fn following<I: Stream<Token = char>>(
-	logger: Rc<RefCell<Vec<String>>>,
-) -> impl Parser<I, Output = Vec<Rc<Node>>> {
-	let tmp = (chr::char(','), element(logger)).map(|(_, o)| o);
+fn following<I: Stream<Token = char>>() -> impl Parser<I, Output = Vec<Rc<Node>>> {
+	let tmp = (chr::char(','), element()).map(|(_, o)| o);
 	cmb::many::<Vec<Rc<Node>>, I, _>(tmp)
 }
 
-fn contents<I: Stream<Token = char>>(
-	logger: Rc<RefCell<Vec<String>>>,
-) -> impl Parser<I, Output = NodeValue> {
+fn contents<I: Stream<Token = char>>() -> impl Parser<I, Output = NodeValue> {
 	let empty = ws::<I>().map(|_| NodeValue::Object(NonTerminalNode::new(Vec::new())));
 
-	let contents = (first::<I>(logger.clone()), following(logger.clone())).map(|(a, b)| {
+	let contents = (first::<I>(), following()).map(|(a, b)| {
 		let mut v = b;
 		v.insert(0, a);
 
@@ -55,15 +47,8 @@ fn contents<I: Stream<Token = char>>(
 	cmb::attempt(contents).or(empty)
 }
 
-pub fn object<I: Stream<Token = char>>(
-	logger: Rc<RefCell<Vec<String>>>,
-) -> impl Parser<I, Output = NodeValue> {
-	(
-		chr::char('{'),
-		contents::<I>(logger.clone()),
-		chr::char('}'),
-	)
-		.map(|(_, c, _)| c)
+pub fn object<I: Stream<Token = char>>() -> impl Parser<I, Output = NodeValue> {
+	(chr::char('{'), contents::<I>(), chr::char('}')).map(|(_, c, _)| c)
 }
 
 #[cfg(test)]
@@ -100,7 +85,7 @@ mod test {
 
 	#[test]
 	fn single_object() {
-		let mut parser = super::object::<&str>(gen_logger());
+		let mut parser = super::object::<&str>();
 		let (a, r) = parser.parse(r#"{"foo":42.195}"#).unwrap();
 
 		assert_eq!(r, "");
@@ -114,7 +99,7 @@ mod test {
 
 	#[test]
 	fn following() {
-		let mut parser = super::following::<&str>(gen_logger());
+		let mut parser = super::following::<&str>();
 		let (a, r) = parser.parse(r#","key1":1,"key2":true"#).unwrap();
 		assert_eq!(r, "");
 		assert_eq!(a.len(), 2);
@@ -130,7 +115,7 @@ mod test {
 
 	#[test]
 	fn contents() {
-		let mut parser = super::contents::<&str>(gen_logger());
+		let mut parser = super::contents::<&str>();
 
 		let (a, r) = parser.parse("").unwrap();
 		assert_eq!(r, "");
@@ -170,7 +155,7 @@ mod test {
 	#[test]
 	fn object() {
 		let str = generate_simple();
-		let mut parser = super::object::<&str>(gen_logger());
+		let mut parser = super::object::<&str>();
 
 		let (_, r) = parser
 			.parse(r#"{   "key"    :   42 ,"null":null}"#)
@@ -210,7 +195,7 @@ mod test {
 
 	#[test]
 	fn element() {
-		let mut parser = super::element::<&str>(gen_logger());
+		let mut parser = super::element::<&str>();
 		let (a, r) = parser.parse(r#""key":true"#).unwrap();
 		assert_eq!(r, "");
 		a.identity().assert_key("key");
@@ -226,14 +211,14 @@ mod test {
 	#[test]
 	fn empty() {
 		let str = "{}";
-		let mut parser = super::object::<&str>(gen_logger());
+		let mut parser = super::object::<&str>();
 
 		let (act, rem) = parser.parse(&str).unwrap();
 		assert_eq!(rem, "");
 		assert_eq!(act.extract_object().value().len(), 0);
 
 		let str = format!("{{{WS}}}");
-		let mut parser = super::object::<&str>(gen_logger());
+		let mut parser = super::object::<&str>();
 		let (act, rem) = parser.parse(&str).unwrap();
 		assert_eq!(rem, "");
 		assert_eq!(act.extract_object().value().len(), 0);
@@ -242,7 +227,7 @@ mod test {
 	#[test]
 	fn invalid() {
 		let str = "{50:50}";
-		let mut parser = super::object::<&str>(gen_logger());
+		let mut parser = super::object::<&str>();
 
 		assert!(parser.parse(str).is_err())
 	}
