@@ -1,6 +1,7 @@
 mod categories;
 mod local_time_stamper;
 mod log_datum;
+mod logger;
 mod time_stamper;
 
 pub mod prelude {
