@@ -4,7 +4,6 @@ version = "0.1.0"
 edition = "2021"
 
 [dev-dependencies]
-mockall = "*"
 
 [dependencies]
 csv = { path = "../csv" }
@@ -12,3 +11,6 @@ ndjson = { path = "../ndjson" }
 combine = "*"
 rand = "*"
 chrono = "*"
+mockall = "*"
+
+

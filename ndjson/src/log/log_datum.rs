@@ -3,20 +3,18 @@ use crate::log::categories::Categories;
 use chrono::{DateTime, Local, TimeZone};
 use std::fmt::{Debug, Display};
 
-pub struct LogDatum<Tz: TimeZone, Ts: TimeStamper<Tz>> {
+pub struct LogDatum<Tz: TimeZone> {
 	time_stamp: DateTime<Tz>,
 	category: Categories,
 	message: String,
-	phantom: std::marker::PhantomData<Ts>,
 }
 
-impl<Tz: TimeZone, Ts: TimeStamper<Tz>> LogDatum<Tz, Ts> {
-	pub fn new(category: Categories, message: String) -> Self {
+impl<Tz: TimeZone> LogDatum<Tz> {
+	pub fn new(time_stamp: DateTime<Tz>, category: Categories, message: String) -> Self {
 		Self {
-			time_stamp: Ts::time_stamp(),
+			time_stamp,
 			category,
 			message,
-			phantom: std::marker::PhantomData,
 		}
 	}
 
@@ -33,7 +31,7 @@ impl<Tz: TimeZone, Ts: TimeStamper<Tz>> LogDatum<Tz, Ts> {
 	}
 }
 
-impl<Tz: TimeZone, Ts: TimeStamper<Tz>> Debug for LogDatum<Tz, Ts> {
+impl<Tz: TimeZone> Debug for LogDatum<Tz> {
 	fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
 		f.debug_struct("LogDatum")
 			.field("time_stamp", &self.time_stamp)
@@ -52,26 +50,19 @@ mod tests {
 	use std::borrow::{Borrow, BorrowMut};
 	use std::ops::Deref;
 
-	mod new_mock {
-		include!("../test_helper/mock_time_stamper.rs");
-	}
-
 	#[test]
 	fn new() {
 		for elem in test_categories::CATEGORIES {
-			let fixture =
-				LogDatum::<Local, new_mock::MockTimeStamper>::new(elem.clone(), "test".to_string());
+			let expected = Local::now();
 
-			assert_eq!(fixture.time_stamp(), new_mock::EXPECTED.deref());
+			let fixture =
+				LogDatum::<Local>::new(expected.clone(), elem.clone(), "test".to_string());
+
+			assert_eq!(fixture.time_stamp(), &expected);
 			assert_eq!(fixture.category(), &elem);
 
 			assert_eq!(fixture.message(), "test");
 		}
-
-		assert_eq!(
-			new_mock::CALL_COUNT.load(std::sync::atomic::Ordering::Relaxed),
-			5
-		);
 	}
 
 	mod time_stamp {
@@ -81,16 +72,11 @@ mod tests {
 	#[test]
 	fn time_stamp() {
 		for elem in test_categories::CATEGORIES {
-			let fixture =
-				LogDatum::<Local, new_mock::MockTimeStamper>::new(elem.clone(), "test".to_string());
+			let now = Local::now();
+			let fixture = LogDatum::<Local>::new(now.clone(), elem.clone(), "test".to_string());
 
-			assert_eq!(fixture.time_stamp(), new_mock::EXPECTED.deref());
+			assert_eq!(fixture.time_stamp(), &now);
 		}
-
-		assert_eq!(
-			new_mock::CALL_COUNT.load(std::sync::atomic::Ordering::Relaxed),
-			5
-		);
 	}
 
 	mod other {
@@ -100,7 +86,8 @@ mod tests {
 	#[test]
 	fn category() {
 		for elem in test_categories::CATEGORIES {
-			let fixture = LogDatum::<Local, other::MockTimeStamper>::new(elem, "test".to_string());
+			let now = Local::now();
+			let fixture = LogDatum::<Local>::new(now.clone(), elem, "test".to_string());
 
 			assert_eq!(fixture.category(), &elem);
 		}
@@ -109,8 +96,7 @@ mod tests {
 	#[test]
 	fn message() {
 		for elem in test_categories::CATEGORIES {
-			let fixture =
-				LogDatum::<Local, other::MockTimeStamper>::new(elem, format!("test {:?}", elem));
+			let fixture = LogDatum::<Local>::new(Local::now(), elem, format!("test {:?}", elem));
 
 			assert_eq!(fixture.message(), &format!("test {:?}", elem));
 		}
@@ -119,11 +105,11 @@ mod tests {
 	#[test]
 	fn debug() {
 		for elem in test_categories::CATEGORIES {
-			let fixture =
-				LogDatum::<Local, other::MockTimeStamper>::new(elem, format!("test {:#?}", elem));
+			let now = Local::now();
+			let fixture = LogDatum::<Local>::new(now.clone(), elem, format!("test {:#?}", elem));
 			let expected = format!(
 				"LogDatum {{ time_stamp: {:?}, category: {:?}, message: {:#?} }}",
-				other::EXPECTED.deref(),
+				&now,
 				elem,
 				format!("test {:#?}", elem)
 			);
