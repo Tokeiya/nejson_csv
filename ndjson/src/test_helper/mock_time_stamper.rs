@@ -16,7 +16,9 @@ pub static CALL_COUNT: AtomicUsize = AtomicUsize::new(0usize);
 pub struct MockTimeStamper;
 
 #[cfg(test)]
-impl TimeStamper<Local> for MockTimeStamper {
+impl TimeStamper for MockTimeStamper {
+	type Tz = Local;
+
 	fn time_stamp() -> DateTime<Local> {
 		CALL_COUNT.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
 		*EXPECTED

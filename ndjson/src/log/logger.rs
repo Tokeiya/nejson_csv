@@ -1,30 +1,52 @@
 use super::prelude::*;
 use chrono::TimeZone;
 
-pub trait Logger<Tz: TimeZone, Ts: TimeStamper<Tz>> {
-	fn write_log(&mut self, datum: LogDatum<Tz>);
+pub trait Logger {
+	type Tz: TimeZone;
+	type Ts: TimeStamper<Tz = Self::Tz>;
+	fn write_log(&mut self, datum: LogDatum<Self::Tz>);
 	fn write(&mut self, categories: Categories, msg: &str) {
-		let datum = LogDatum::new(Ts::time_stamp(), categories, msg.to_string());
+		let datum = LogDatum::new(Self::Ts::time_stamp(), categories, msg.to_string());
 		self.write_log(datum);
 	}
 	fn write_error(&mut self, message: &str) {
-		let datum = LogDatum::new(Ts::time_stamp(), Categories::Error, message.to_string());
+		let datum = LogDatum::new(
+			Self::Ts::time_stamp(),
+			Categories::Error,
+			message.to_string(),
+		);
 		self.write_log(datum);
 	}
 	fn write_warning(&mut self, message: &str) {
-		let datum = LogDatum::new(Ts::time_stamp(), Categories::Warning, message.to_string());
+		let datum = LogDatum::new(
+			Self::Ts::time_stamp(),
+			Categories::Warning,
+			message.to_string(),
+		);
 		self.write_log(datum);
 	}
 	fn write_info(&mut self, message: &str) {
-		let datum = LogDatum::new(Ts::time_stamp(), Categories::Info, message.to_string());
+		let datum = LogDatum::new(
+			Self::Ts::time_stamp(),
+			Categories::Info,
+			message.to_string(),
+		);
 		self.write_log(datum);
 	}
 	fn write_notify(&mut self, message: &str) {
-		let datum = LogDatum::new(Ts::time_stamp(), Categories::Notify, message.to_string());
+		let datum = LogDatum::new(
+			Self::Ts::time_stamp(),
+			Categories::Notify,
+			message.to_string(),
+		);
 		self.write_log(datum);
 	}
 	fn write_verbose(&mut self, message: &str) {
-		let datum = LogDatum::new(Ts::time_stamp(), Categories::Verbose, message.to_string());
+		let datum = LogDatum::new(
+			Self::Ts::time_stamp(),
+			Categories::Verbose,
+			message.to_string(),
+		);
 		self.write_log(datum);
 	}
 }
@@ -50,7 +72,10 @@ pub mod test_helper {
 		}
 	}
 
-	impl Logger<Local, time_stamper::MockTimeStamper> for MockLogger {
+	impl Logger for MockLogger {
+		type Tz = Local;
+		type Ts = time_stamper::MockTimeStamper;
+
 		fn write_log(&mut self, datum: LogDatum<Local>) {
 			self.0.push(datum);
 		}

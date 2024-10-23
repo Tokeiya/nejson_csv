@@ -3,7 +3,9 @@ use chrono::{DateTime, Local};
 
 pub struct LocalTimeStamper;
 
-impl TimeStamper<Local> for LocalTimeStamper {
+impl TimeStamper for LocalTimeStamper {
+	type Tz = Local;
+
 	fn time_stamp() -> DateTime<Local> {
 		Local::now()
 	}

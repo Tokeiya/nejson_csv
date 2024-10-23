@@ -1,12 +1,13 @@
-#[cfg(test)]
 use super::prelude::*;
-#[cfg(test)]
 use chrono::TimeZone;
+use std::marker::PhantomData;
 
-pub struct ConsoleLogger;
+pub struct ConsoleLogger<Tz, Ts>(PhantomData<(Tz, Ts)>);
 
-#[cfg(test)]
-impl<Tz: TimeZone, Ts: TimeStamper<Tz>> Logger<Tz, Ts> for ConsoleLogger {
+impl<Tz: TimeZone, Ts: TimeStamper<Tz = Tz>> Logger for ConsoleLogger<Tz, Ts> {
+	type Tz = Tz;
+	type Ts = Ts;
+
 	fn write_log(&mut self, datum: LogDatum<Tz>) {
 		println!(
 			"{:?} {:?} {}",
