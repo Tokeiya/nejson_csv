@@ -17,4 +17,5 @@ pub mod prelude {
 #[cfg(test)]
 pub mod test_prelude {
 	pub use super::categories::test_helper as test_categories;
+	pub use super::logger::test_helper as test_logger;
 }
