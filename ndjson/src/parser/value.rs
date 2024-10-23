@@ -1,9 +1,12 @@
 use super::number::number;
 use super::{array::array, boolean::boolean, null::null, object::object, string::string};
+use crate::log::prelude::Logger;
 use crate::syntax_node::prelude::*;
 use combine as cmb;
 use combine::{choice, parser, Parser, Stream};
+use std::cell::RefCell;
 use std::rc::Rc;
+
 pub fn ws<I: Stream<Token = char>>() -> impl Parser<I, Output = String> {
 	let space = cmb::satisfy::<I, _>(|c| match c {
 		'\u{20}' => true,
@@ -16,8 +19,17 @@ pub fn ws<I: Stream<Token = char>>() -> impl Parser<I, Output = String> {
 	cmb::many::<String, I, _>(space)
 }
 
-fn value_<I: Stream<Token = char>>() -> impl Parser<I, Output = Rc<Node>> {
-	let v = choice!(boolean(), null(), string(), number(), array(), object());
+fn value_<I: Stream<Token = char>, L: Logger>(
+	logger: Rc<RefCell<L>>,
+) -> impl Parser<I, Output = Rc<Node>> {
+	let v = choice!(
+		boolean(),
+		null(),
+		string(),
+		number(),
+		array(logger.clone()),
+		object(logger.clone())
+	);
 	(ws(), v, ws()).map(|(_, v, _)| {
 		let root = Node::new(v);
 
@@ -36,17 +48,23 @@ fn value_<I: Stream<Token = char>>() -> impl Parser<I, Output = Rc<Node>> {
 }
 
 parser! {
-	pub fn value[I]()(I)->Rc<Node>
-	where [I:Stream<Token=char>]{
-		value_()
+	pub fn value[I,L](logger:Rc<RefCell<L>>)(I)->Rc<Node>
+	where [I:Stream<Token=char>,
+	L:Logger]{
+		value_(logger.clone())
 	}
 }
 #[cfg(test)]
 mod test {
 	use super::*;
+	use crate::log::test_prelude::test_logger::MockLogger;
 	use crate::syntax_node::test_prelude::*;
 	use std::borrow::Borrow;
 	use std::ptr::eq;
+
+	fn gen_logger() -> Rc<RefCell<MockLogger>> {
+		Rc::new(RefCell::new(MockLogger::new()))
+	}
 
 	fn add_ws(s: &str) -> String {
 		format!("{WS}{s}{WS}")
@@ -54,7 +72,7 @@ mod test {
 	#[test]
 	fn string() {
 		let str = add_ws(r#""rust""#);
-		let mut parser = super::value::<&str>();
+		let mut parser = super::value::<&str, _>(gen_logger());
 		let (a, rem) = parser.parse(&str).unwrap();
 		assert_eq!(rem, "");
 		a.value().extract_terminal().assert_string("rust");
@@ -63,7 +81,7 @@ mod test {
 	#[test]
 	fn integer() {
 		let str = add_ws("42");
-		let mut parser = super::value::<&str>();
+		let mut parser = super::value::<&str, _>(gen_logger());
 		let (a, rem) = parser.parse(&str).unwrap();
 		assert_eq!(rem, "");
 		a.value().extract_terminal().assert_integer("42");
@@ -72,13 +90,13 @@ mod test {
 	#[test]
 	fn float() {
 		let str = add_ws("42.195");
-		let mut parser = super::value::<&str>();
+		let mut parser = super::value::<&str, _>(gen_logger());
 		let (a, rem) = parser.parse(&str).unwrap();
 		assert_eq!(rem, "");
 		a.value().extract_terminal().assert_float("42.195");
 
 		let str = add_ws("42.1955e-1");
-		let mut parser = super::value::<&str>();
+		let mut parser = super::value::<&str, _>(gen_logger());
 		let (a, rem) = parser.parse(&str).unwrap();
 		assert_eq!(rem, "");
 		a.value().extract_terminal().assert_float("42.1955e-1");
@@ -87,13 +105,13 @@ mod test {
 	#[test]
 	fn boolean() {
 		let str = add_ws("true");
-		let mut parser = super::value::<&str>();
+		let mut parser = super::value::<&str, _>(gen_logger());
 		let (a, rem) = parser.parse(&str).unwrap();
 		assert_eq!(rem, "");
 		a.value().extract_terminal().assert_true();
 
 		let str = add_ws("false");
-		let mut parser = super::value::<&str>();
+		let mut parser = super::value::<&str, _>(gen_logger());
 		let (a, rem) = parser.parse(&str).unwrap();
 		assert_eq!(rem, "");
 		a.value().extract_terminal().assert_false();
@@ -102,7 +120,7 @@ mod test {
 	#[test]
 	fn null() {
 		let str = add_ws("null");
-		let mut parser = super::value::<&str>();
+		let mut parser = super::value::<&str, _>(gen_logger());
 		let (a, rem) = parser.parse(&str).unwrap();
 		assert_eq!(rem, "");
 		a.value().extract_terminal().assert_null();
@@ -110,7 +128,7 @@ mod test {
 
 	#[test]
 	fn empty_array() {
-		let mut parser = super::value::<&str>();
+		let mut parser = super::value::<&str, _>(gen_logger());
 		let (v, r) = parser.parse("[   ]").unwrap();
 		assert_eq!(r, "");
 		assert_eq!(v.value().extract_array().value().len(), 0);
@@ -118,7 +136,7 @@ mod test {
 	#[test]
 	fn array() {
 		let str = add_ws("[1,  2,3]");
-		let mut parser = super::value::<&str>(); //::<&str>();
+		let mut parser = super::value::<&str, _>(gen_logger()); //::<&str>();
 		let (a, rem) = parser.parse(&str).unwrap();
 		assert_eq!(rem, "");
 		a.identity().assert_undefined();
@@ -141,7 +159,7 @@ mod test {
 	#[test]
 	fn object() {
 		let str = add_ws(r#"{"a": 1, "b": 2, "c": 3}"#);
-		let mut parser = super::value::<&str>();
+		let mut parser = super::value::<&str, _>(gen_logger());
 		let (a, rem) = parser.parse(&str).unwrap();
 		a.identity().assert_undefined();
 		assert_eq!(rem, "");
@@ -160,7 +178,7 @@ mod test {
 
 	#[test]
 	fn complex() {
-		let mut parser = super::value::<&str>();
+		let mut parser = super::value::<&str, _>(gen_logger());
 		let (a, r) = parser
 			.parse(r#"{"obj"  :{   "o":10}      ,"arr":[1,2,3]}"#)
 			.unwrap();
@@ -211,12 +229,12 @@ mod test {
 
 		let (a, r) = parser.parse("").unwrap();
 		assert_eq!("", a);
-		assert_eq!("", r)
+		assert_eq!("", r);
 	}
 
 	#[test]
 	fn parent() {
-		let mut parser = value::<&str>();
+		let mut parser = value::<&str, _>(gen_logger());
 		let (root, _) = parser.parse("[1,2]").unwrap();
 
 		if let NodeValue::Array(arr) = root.value() {
