@@ -8,6 +8,7 @@ mod time_stamper;
 
 pub mod prelude {
 	pub use super::categories::Categories;
+	pub use super::console_logger::ConsoleLogger;
 	pub use super::local_time_stamper::LocalTimeStamper;
 	pub use super::log_datum::LogDatum;
 	pub use super::logger::Logger;

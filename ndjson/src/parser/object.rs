@@ -2,7 +2,6 @@ use super::string::string as string_parser;
 use super::value::{value, ws};
 use crate::syntax_node::prelude::*;
 use combine::{self as cmb, parser::char as chr, Parser, Stream};
-use std::cell::RefCell;
 use std::rc::Rc;
 
 fn element<I: Stream<Token = char>>() -> impl Parser<I, Output = Rc<Node>> {
@@ -77,10 +76,6 @@ mod test {
 			("true", "true"),
 			("false", "false"),
 		])
-	}
-
-	fn gen_logger() -> Rc<RefCell<Vec<String>>> {
-		Rc::new(RefCell::new(Vec::new()))
 	}
 
 	#[test]

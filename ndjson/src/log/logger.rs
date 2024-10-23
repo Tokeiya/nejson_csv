@@ -32,7 +32,7 @@ pub trait Logger<Tz: TimeZone, Ts: TimeStamper<Tz>> {
 #[cfg(test)]
 pub mod test_helper {
 	use super::*;
-	use chrono::{DateTime, Local};
+	use chrono::Local;
 
 	pub mod time_stamper {
 		include!("../test_helper/mock_time_stamper.rs");

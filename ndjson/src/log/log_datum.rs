@@ -1,7 +1,6 @@
-use super::time_stamper::TimeStamper;
 use crate::log::categories::Categories;
-use chrono::{DateTime, Local, TimeZone};
-use std::fmt::{Debug, Display};
+use chrono::{DateTime, TimeZone};
+use std::fmt::Debug;
 
 pub struct LogDatum<Tz: TimeZone> {
 	time_stamp: DateTime<Tz>,
@@ -43,12 +42,9 @@ impl<Tz: TimeZone> Debug for LogDatum<Tz> {
 
 #[cfg(test)]
 mod tests {
-	use crate::log::prelude::{Categories, LogDatum};
+	use crate::log::prelude::LogDatum;
 	use crate::log::test_prelude::*;
-	use crate::log::time_stamper::TimeStamper;
 	use chrono::Local;
-	use std::borrow::{Borrow, BorrowMut};
-	use std::ops::Deref;
 
 	#[test]
 	fn new() {

@@ -1,5 +1,3 @@
-use std::fmt::Display;
-
 #[derive(Clone, Copy, PartialEq, Debug)]
 pub enum Categories {
 	Error,
@@ -13,7 +11,6 @@ pub enum Categories {
 mod tests {
 	use super::test_helper::CATEGORIES;
 	use super::Categories;
-	use std::fmt::Debug;
 	#[test]
 	fn debug() {
 		let expected = ["Error", "Warning", "Notify", "Info", "Verbose"];
@@ -24,6 +21,8 @@ mod tests {
 
 	#[test]
 	fn copy() {
+		#[allow(unused_variables)]
+		#[allow(unused_assignments)]
 		let mut a = Categories::Error;
 		let b = Categories::Error;
 

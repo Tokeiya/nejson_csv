@@ -3,7 +3,6 @@ use super::{array::array, boolean::boolean, null::null, object::object, string::
 use crate::syntax_node::prelude::*;
 use combine as cmb;
 use combine::{choice, parser, Parser, Stream};
-use std::cell::RefCell;
 use std::rc::Rc;
 pub fn ws<I: Stream<Token = char>>() -> impl Parser<I, Output = String> {
 	let space = cmb::satisfy::<I, _>(|c| match c {
@@ -49,13 +48,11 @@ mod test {
 	use std::borrow::Borrow;
 	use std::ptr::eq;
 
-	type Logger = Rc<RefCell<Vec<String>>>;
 	fn add_ws(s: &str) -> String {
 		format!("{WS}{s}{WS}")
 	}
 	#[test]
 	fn string() {
-		let logger = Logger::new(RefCell::new(Vec::new()));
 		let str = add_ws(r#""rust""#);
 		let mut parser = super::value::<&str>();
 		let (a, rem) = parser.parse(&str).unwrap();
@@ -65,8 +62,6 @@ mod test {
 
 	#[test]
 	fn integer() {
-		let logger = Logger::new(RefCell::new(Vec::new()));
-
 		let str = add_ws("42");
 		let mut parser = super::value::<&str>();
 		let (a, rem) = parser.parse(&str).unwrap();
@@ -76,8 +71,6 @@ mod test {
 
 	#[test]
 	fn float() {
-		let logger = Logger::new(RefCell::new(Vec::new()));
-
 		let str = add_ws("42.195");
 		let mut parser = super::value::<&str>();
 		let (a, rem) = parser.parse(&str).unwrap();
@@ -93,8 +86,6 @@ mod test {
 
 	#[test]
 	fn boolean() {
-		let logger = Logger::new(RefCell::new(Vec::new()));
-
 		let str = add_ws("true");
 		let mut parser = super::value::<&str>();
 		let (a, rem) = parser.parse(&str).unwrap();
@@ -110,8 +101,6 @@ mod test {
 
 	#[test]
 	fn null() {
-		let logger = Logger::new(RefCell::new(Vec::new()));
-
 		let str = add_ws("null");
 		let mut parser = super::value::<&str>();
 		let (a, rem) = parser.parse(&str).unwrap();
@@ -121,8 +110,6 @@ mod test {
 
 	#[test]
 	fn empty_array() {
-		let logger = Logger::new(RefCell::new(Vec::new()));
-
 		let mut parser = super::value::<&str>();
 		let (v, r) = parser.parse("[   ]").unwrap();
 		assert_eq!(r, "");
@@ -130,8 +117,6 @@ mod test {
 	}
 	#[test]
 	fn array() {
-		let logger = Logger::new(RefCell::new(Vec::new()));
-
 		let str = add_ws("[1,  2,3]");
 		let mut parser = super::value::<&str>(); //::<&str>();
 		let (a, rem) = parser.parse(&str).unwrap();
@@ -155,8 +140,6 @@ mod test {
 
 	#[test]
 	fn object() {
-		let logger = Logger::new(RefCell::new(Vec::new()));
-
 		let str = add_ws(r#"{"a": 1, "b": 2, "c": 3}"#);
 		let mut parser = super::value::<&str>();
 		let (a, rem) = parser.parse(&str).unwrap();
@@ -177,8 +160,6 @@ mod test {
 
 	#[test]
 	fn complex() {
-		let logger = Logger::new(RefCell::new(Vec::new()));
-
 		let mut parser = super::value::<&str>();
 		let (a, r) = parser
 			.parse(r#"{"obj"  :{   "o":10}      ,"arr":[1,2,3]}"#)
@@ -235,7 +216,6 @@ mod test {
 
 	#[test]
 	fn parent() {
-		let logger = Logger::new(RefCell::new(Vec::new()));
 		let mut parser = value::<&str>();
 		let (root, _) = parser.parse("[1,2]").unwrap();
 

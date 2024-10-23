@@ -1,5 +1,5 @@
 use super::time_stamper::TimeStamper;
-use chrono::{DateTime, Local, TimeZone};
+use chrono::{DateTime, Local};
 
 pub struct LocalTimeStamper;
 
@@ -28,7 +28,6 @@ mod test {
 			assert!((now - stamp).abs() < single_tolerance);
 		}
 
-		let average = accum / 100;
 		assert!((accum / 100) < tolerance);
 	}
 }
