@@ -10,10 +10,10 @@ fn element<I: Stream<Token = char>, L: Logger>(
 	logger: Rc<RefCell<L>>,
 ) -> impl Parser<I, Output = Rc<Node>> {
 	let check = (ws::<I>(), string_parser::<I>(), ws::<I>());
+	let l = logger.clone();
 
 	let key = (cmb::look_ahead(check), value::<I, L>(logger.clone())).map(|(_, v)| v);
-	(key, chr::char(':'), value(logger.clone())).map(|(k, _, v)| {
-		//ObjectElement::new(k, v)
+	(key, chr::char(':'), value(logger.clone())).map(move |(k, _, v)| {
 		let NodeValue::Terminal(key) = k.value() else {
 			unreachable!()
 		};
@@ -23,6 +23,9 @@ fn element<I: Stream<Token = char>, L: Logger>(
 
 		let id = ObjectIdentity::try_from(key.as_str()).unwrap();
 		v.set_identity(Identity::from(id.escaped()));
+
+		l.borrow_mut()
+			.write_verbose(&format!("key: {} value: {}", key.as_str(), v));
 
 		v
 	})
@@ -46,8 +49,10 @@ fn contents<I: Stream<Token = char>, L: Logger>(
 ) -> impl Parser<I, Output = NodeValue> {
 	let empty = ws::<I>().map(|_| NodeValue::Object(NonTerminalNode::new(Vec::new())));
 
-	let contents = (first::<I, L>(logger.clone()), following(logger.clone())).map(|(a, b)| {
+	let l = logger.clone();
+	let contents = (first::<I, L>(logger.clone()), following(logger.clone())).map(move |(a, b)| {
 		let mut v = b;
+		l.borrow_mut().write_verbose("foo");
 		v.insert(0, a);
 
 		NodeValue::Object(NonTerminalNode::new(v))
